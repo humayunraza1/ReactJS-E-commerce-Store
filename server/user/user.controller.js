@@ -1,4 +1,5 @@
 const {User,Item,Cart} = require('../models/user.model');
+const jwt = require('jsonwebtoken');
 
 const displayUserDetails = async (req, res) => {
     const { userID } = req.user;
@@ -7,126 +8,188 @@ const displayUserDetails = async (req, res) => {
     return res.status(201).send({message:"Loaded details", user:user});
 }
 
+// Function to update cart in user's authentication token
+function updateCartInAuthToken(token, cartData) {
+    // Decode the token
+    const decodedToken = jwt.decode(token);
+
+    // Update the cart data in the decoded token payload
+    decodedToken.cart = cartData;
+    console.log("cart gotten from token: ", decodedToken.cart)
+    // Sign the updated payload to generate a new token
+    const updatedToken = jwt.sign(decodedToken, process.env.JWT_SECRET); // Assuming 1 hour expiry
+
+    return updatedToken;
+}
+
+// Function to add item to cart
 async function addItemToCart(req, res) {
     try {
         const { userID } = req.user;
+        const authToken = req.cookies.authToken
         const { itemID, quantity } = req.body;
-
-        // Find the item in the database
-        const item = await Item.findOne({ itemID });
-        console.log(item)
-        if (!item || item.stock < quantity) {
-            return res.status(400).send("Item quantity not set or insufficient stock");
+        console.log("item:", itemID)
+        console.log("quantity:", quantity)
+        // Check if itemID and quantity are provided
+        if (!itemID || !quantity) {
+            return res.status(400).send("Item ID and quantity are required");
         }
 
-        // Get the price of the item
-        const price = item.price;
-
-        // Calculate the total cost by multiplying the price by the quantity
-        const totalCost = price * quantity;
-
-        console.log("Price:", item.price);
-        console.log("Quantity:", quantity);
-
         let cart = await Cart.findOne({ userID });
+        let item = await Item.findOne({ itemID });
 
         // If user doesn't have a cart, create a new one
         if (!cart) {
-            cart = new Cart({ userID, items: [] });
+            if(authToken){
+                const decoded = jwt.decode(authToken)
+                const cartDataFromCookies = decoded.cart;
+                console.log(cartDataFromCookies)
+                cart = new Cart({ userID, items: cartDataFromCookies })
+            }else{
+                cart = new Cart({ userID, items: [] });
+            }
         }
 
         // Check if the item is already in the cart
         const existingItemIndex = cart.items.findIndex(item => item.itemID === itemID);
-        let message = "";
-        if (existingItemIndex !== -1) {
-            // If the item already exists in the cart, update the quantity and total cost
-            cart.items[existingItemIndex].qty += quantity;
-            cart.items[existingItemIndex].totalCost += totalCost;
-            await cart.save();
-            message = `${item.itemName} added to cart`
-        } else {
-            // Otherwise, add a new item to the cart with the calculated total cost
-            cart.items.push({ itemID, qty: quantity, cost: totalCost });
-            await cart.save();
-            message = `${item.itemName} added to cart`
-        }
+        let updatedToken;
+        if(!item.isOOS){
 
-        // Update stock quantity
-        item.stock -= quantity;
-        // If the stock becomes 0 after adding to cart, mark it as out of stock
-        if (item.stock === 0) {
-            item.isOOS = true;
+            if (existingItemIndex !== -1) {
+                // If the item already exists in the cart, update the quantity
+                cart.items[existingItemIndex].qty += quantity;
+                if(quantity<0){
+                    message =`${quantity} reduced`
+                } else {
+                    message =`${quantity} added`
+                }
+                if (cart.items[existingItemIndex].qty <= 0) {
+                    console.log("Item removed: ", cart.items[existingItemIndex]);
+                    message = `${item.itemName} removed from cart`
+                    cart.items.splice(existingItemIndex, 1);
+                } else{             
+                    cart.items[existingItemIndex].cost = item.price*cart.items[existingItemIndex].qty;
+                }
+                
+            } else {
+                // Otherwise, add a new item to the cart
+                message = `${quantity}x ${item.itemName} added `
+                cart.items.push({ itemID, qty: quantity, cost:item.price });
+            }
+        }else{
+            cart.items.splice(existingItemIndex, 1);
+            await cart.save();
+            // Update cart in user's authentication token
+          updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
+        // Set the updated token as a cookie
+        res.cookie('authToken', updatedToken, { httpOnly: true, maxAge: 3600000 }); // 1 hour expiry
+            return res.status(203).send("Item is now out of stock.")
         }
-        await item.save();
+            
+        // Save cart to database and reset expiration time
+        cart.expiresAfter = Date.now(); // 1 hour expiry
+        await cart.save();
 
-        return res.status(201).send({ message: message });
+        // Update cart in user's authentication token
+       updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
+
+        // Set the updated token as a cookie
+        res.cookie('authToken', updatedToken, { httpOnly: true, maxAge: 3600000 }); // 1 hour expiry
+
+        return res.status(201).send({message:message, item:cart.items});
     } catch (error) {
-        return res.status(500).send({ message: "error occurred", error: error });
+        console.error("Error adding item to cart:", error);
+        return res.status(500).send("An error occurred while adding item to cart");
     }
 }
 
+// // Function to remove item from cart
+// async function removeItemFromCart(req, res) {
+//     try {
+//         const { userID } = req.user;
+//         const { itemID, quantity } = req.body;
+
+//         // Find the user's cart
+//         let cart = await Cart.findOne({ userID });
+
+//         // If cart doesn't exist, try to retrieve cart data from the user's cookies
+//         if (!cart) {
+//             // Get cart data from cookies
+//             const cartDataFromCookies = req.cookies.cart;
+
+//             // If cart data exists in cookies, use it to create a new cart
+//             if (cartDataFromCookies) {
+//                 cart = new Cart({ userID, items: cartDataFromCookies });
+//             } else {
+//                 // If cart data doesn't exist in cookies either, return an error
+//                 return res.status(404).send("Cart not found");
+//             }
+//         }
+
+//         // Find the index of the item to remove
+//         const itemIndex = cart.items.findIndex(item => item.itemID === itemID);
+
+//         // If item not found, return error
+//         if (itemIndex === -1) {
+//             return res.status(404).send("Item not found in cart");
+//         }
+//         // If quantity becomes 0 or less, remove the item from the cart
+//         if (cart.items[itemIndex].qty <= 0) {
+//             cart.items.splice(itemIndex, 1);
+//         }
+
+//         // Update cart in the database
+//         await cart.save();
+
+//         // Update cart in user's authentication token (assuming it's stored in a JWT)
+//         const updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
+
+//         // Set the updated token as a cookie
+//         res.cookie('authToken', updatedToken, { httpOnly: true, maxAge: 3600000 }); // 1 hour expiry
+
+//         return res.status(200).send("Item removed from cart successfully");
+//     } catch (error) {
+//         console.error("Error removing item from cart:", error);
+//         return res.status(500).send("An error occurred while removing item from cart");
+//     }
+// }
 
 
-// Pseudo-code for removing an item from the cart
-async function removeItemFromCart(userId, itemId, quantity) {
-    let cart = await Cart.findOne({ userId });
+// Function to handle expired database entries
+async function handleExpiredDatabaseEntries() {
+    try {
+        console.log("Looking for expired carts in the database.");
 
-    if (!cart) {
-        throw new Error('Cart not found');
-    }
+        // Find all carts in the database
+        const carts = await Cart.find();
 
-    const itemIndex = cart.items.findIndex(item => item.itemId === itemId);
+        // Check if there are no carts
+        if (carts.length === 0) {
+            console.log("Carts are empty.");
+            return;
+        }
 
-    if (itemIndex === -1) {
-        throw new Error('Item not found in the cart');
-    }
+        // Calculate the minimum expiration time required (2 minutes ago)
+        const minExpirationTime = Date.now() - (2 * 60 * 1000);
 
-    // Update stock quantity
-    const item = await Item.findById(itemId);
-    item.stock += quantity;
-    await item.save();
-
-    // Update cart quantity or remove the item from the cart
-    const updatedQty = cart.items[itemIndex].qty - quantity;
-    if (updatedQty <= 0) {
-        cart.items.splice(itemIndex, 1);
-    } else {
-        cart.items[itemIndex].qty = updatedQty;
-    }
-
-    await cart.save();
-}
-
-// Function to handle expired carts
-async function handleExpiredCarts() {
-    // Calculate the expiration time (1 hour ago)
-    const expirationTime = new Date(Date.now() - 1 * 60 * 1000);
-    console.log("checking for expired carts")
-    // Find carts that have expired
-    const expiredCarts = await Cart.find({ expiresAfter: { $lte: expirationTime } });
-
-    // Iterate through each expired cart
-    for (const cart of expiredCarts) {
-        // Iterate through items in the cart
-        console.log(`${cart} deleted`)
-        for (const item of cart.items) {
-            // Find the corresponding item and add quantity back to stock
-            const { itemID, qty } = item;
-            const itemToUpdate = await Item.findOne({ itemID });
-            if (itemToUpdate) {
-                itemToUpdate.stock += qty;
-                if(itemToUpdate.isOOS) itemToUpdate.isOOS = false;
-                await itemToUpdate.save();
+        // Iterate over each cart and check if it has expired
+        for (const cart of carts) {
+            // If expiration time is at least 2 minutes ago, delete the entry
+            if (cart.expiresAfter <= minExpirationTime) {
+                console.log("cart deleted: ", cart)
+                await Cart.deleteOne({ _id: cart._id });
             }
         }
-        // Delete the expired cart
-        await Cart.deleteOne({ _id: cart._id });
+
+        console.log("Expired database entries handled.");
+    } catch (error) {
+        console.error("Error handling expired database entries:", error);
     }
 }
 
 
 // Schedule the function to run every 5 minutes
-const interval = setInterval(handleExpiredCarts, 0.5 * 60 * 1000); // Runs every 5 minutes
+const interval = setInterval(handleExpiredDatabaseEntries, 0.5 * 60 * 1000); // Runs every 5 minutes
 
 // Optionally, you can clear the interval when your application exits
 // This prevents the function from continuing to run after the application is stopped
