@@ -57,7 +57,8 @@ const cartSchema = new mongoose.Schema({
   items: [{
       itemID: { type: Number, immutable: true },
       cost: Number,
-      qty: Number
+      qty: Number,
+      variant: {type: String, default: "None"}
   }],
   expiresAfter: { type: Date, default: Date.now} // Expires after 1 hour
 });

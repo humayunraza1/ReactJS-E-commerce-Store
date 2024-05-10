@@ -27,7 +27,7 @@ async function addItemToCart(req, res) {
     try {
         const { userID } = req.user;
         const authToken = req.cookies.authToken
-        const { itemID, quantity } = req.body;
+        const { itemID, quantity,variant } = req.body;
         console.log("item:", itemID)
         console.log("quantity:", quantity)
         // Check if itemID and quantity are provided
@@ -37,7 +37,11 @@ async function addItemToCart(req, res) {
 
         let cart = await Cart.findOne({ userID });
         let item = await Item.findOne({ itemID });
-
+        if(variant !== "none"){
+            if(!item.variants.includes(variant)){
+                return res.status(203).send("Invalid variant selected")
+            }
+        }
         // If user doesn't have a cart, create a new one
         if (!cart) {
             if(authToken){
@@ -73,8 +77,11 @@ async function addItemToCart(req, res) {
                 
             } else {
                 // Otherwise, add a new item to the cart
-                message = `${quantity}x ${item.itemName} added `
-                cart.items.push({ itemID, qty: quantity, cost:item.price });
+                if(quantity < 0){
+                    return res.status(203).send("Invalid quantity selected")
+                }
+                message = `${quantity}x ${variant} ${item.itemName} added `
+                cart.items.push({ itemID, qty: quantity, cost:item.price, variant: variant });
             }
         }else{
             cart.items.splice(existingItemIndex, 1);
@@ -187,6 +194,28 @@ async function handleExpiredDatabaseEntries() {
     }
 }
 
+async function placeOrder(req, res) {
+    try {
+        const { userID } = req.user;
+        const authToken = req.cookies.authToken;
+        decoded = jwt.decode(authToken);
+        finalItems = [];
+
+        for (const item of decoded.cart) {
+            const id = item.itemID;
+            const i = await Item.findOne({ itemID:id });
+            finalItem = {Brand: i.brand, Name: i.itemName, Variant:item.variant, Quantity:item.qty, Cost: item.cost}
+            finalItems.push(finalItem);
+        }
+
+        console.log(decoded.cart);
+        console.log("Items to order: ", finalItems);
+        return res.status(201).send({ message: "Order placed", Items: finalItems });
+    } catch (error) {
+        console.log(error);
+        return res.status(203).send({ message: "Unknown error occurred.", error: error });
+    }
+}
 
 // Schedule the function to run every 5 minutes
 const interval = setInterval(handleExpiredDatabaseEntries, 0.5 * 60 * 1000); // Runs every 5 minutes
@@ -197,4 +226,4 @@ process.on('exit', () => {
     clearInterval(interval);
 });
 
-module.exports = {displayUserDetails,addItemToCart};
+module.exports = {displayUserDetails,addItemToCart,placeOrder};
