@@ -13,6 +13,8 @@ const itemCounter = mongoose.model('Counter', counterSchema);
 const userSchema = new mongoose.Schema({
     userID: { type: Number, unique: true, immutable: true }, // Immutable prevents user input
     name: { type: String, required: true },
+    address: {type: String, requried:true},
+    number:{type:String, required:true},
     role: {
         type: String,
         enum: ["Admin", "User"],
@@ -58,7 +60,7 @@ const cartSchema = new mongoose.Schema({
       itemID: { type: Number, immutable: true },
       cost: Number,
       qty: Number,
-      variant: {type: String, default: "None"}
+      variant: {type: String, default: "none"}
   }],
   expiresAfter: { type: Date, default: Date.now} // Expires after 1 hour
 });
