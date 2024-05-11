@@ -47,7 +47,11 @@ const itemSchema = new mongoose.Schema({
         }
     },
     variants: {
-        type: [String], // Array of strings for variants
+        type: [{
+            Variant: String,
+            thumbnail:{type:String, required: true},
+            SKU: { type: String, unique: true }
+        }],
         default: []
     },
     isOOS: { type: Boolean, default: false },
@@ -60,7 +64,9 @@ const cartSchema = new mongoose.Schema({
       itemID: { type: Number, immutable: true },
       cost: Number,
       qty: Number,
-      variant: {type: String, default: "none"}
+      variant: {type: String, default: "none"},
+      SKU: {type:String, required:true},
+      thumbnail: {type:String}
   }],
   expiresAfter: { type: Date, default: Date.now} // Expires after 1 hour
 });

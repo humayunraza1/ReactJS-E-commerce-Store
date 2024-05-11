@@ -27,20 +27,34 @@ async function addItemToCart(req, res) {
   try {
     const { userID } = req.user;
     const authToken = req.cookies.authToken;
-    const { itemID, quantity, variant } = req.body;
+    const { itemID, quantity, sku} = req.body;
     console.log("item:", itemID);
     console.log("quantity:", quantity);
     // Check if itemID and quantity are provided
     if (!itemID || !quantity) {
       return res.status(400).send("Item ID and quantity are required");
     }
-
+    
+    let variantName = ''; // Initialize variant global variable
+    let variantThumbnail = ''; // Initialize variant thumbnail
     let cart = await Cart.findOne({ userID });
     let item = await Item.findOne({ itemID });
-    if (variant !== "none") {
-      if (!item.variants.includes(variant)) {
-        return res.status(203).send("Invalid variant selected");
-      }
+
+    if (!item || !item.variants || !Array.isArray(item.variants)) {
+        return res.status(500).send("Invalid item or variants");
+    } else {
+        if (item.variants.some(variant => variant.SKU === sku)) {
+            // Find the variant matching the SKU
+            const matchingVariant = item.variants.find(variant => variant.SKU === sku);
+                        // Set variantName to the value of Variant
+            variantName = matchingVariant.Variant;
+            // Set variantThumbnail to the value of thumbnail
+            variantThumbnail = matchingVariant.thumbnail;
+        } else {
+            return res.status(500).send("Invalid variant selected");
+        }
+    
+        // Continue with the rest of your logic here...
     }
     // If user doesn't have a cart, create a new one
     if (!cart) {
@@ -56,7 +70,7 @@ async function addItemToCart(req, res) {
 
     // Check if the item is already in the cart
     const existingItemIndex = cart.items.findIndex(
-      (item) => item.itemID === itemID
+      (item) => item.SKU === sku
     );
     let updatedToken;
     if (!item.isOOS) {
@@ -71,28 +85,30 @@ async function addItemToCart(req, res) {
             }
             if (cart.items[existingItemIndex].qty <= 0) {
                 console.log("Item removed: ", cart.items[existingItemIndex]);
-                message = `${item.itemName} removed from cart`;
+                message = `${variantName} ${item.itemName} removed from cart`;
                 cart.items.splice(existingItemIndex, 1);
             } else {
                 cart.items[existingItemIndex].cost =
                 item.price * cart.items[existingItemIndex].qty;
             }
         } else{
-            return res.status(203).send("Cannot add more of this item")
+            return res.status(500).send("Cannot add more of this item")
         } 
       } else {
         // Otherwise, add a new item to the cart
         if (quantity < 0) {
-          return res.status(203).send("Invalid quantity selected");
+          return res.status(500).send("Invalid quantity selected");
         }else if(quantity>item.stock){
-            return res.status(203).send("Invalid quantity entered.")
+            return res.status(500).send("Invalid quantity entered.")
         }
-        message = `${quantity}x ${variant} ${item.itemName} added `;
+        message = `${quantity}x ${variantName} ${item.itemName} added `;
         cart.items.push({
           itemID,
           qty: quantity,
           cost: item.price,
-          variant: variant,
+          variant: variantName,
+          SKU: sku,
+          thumbnail:variantThumbnail
         });
       }
     } else {
