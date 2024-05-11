@@ -231,15 +231,23 @@ async function placeOrder(req, res) {
   try {
     const { userID } = req.user;
     const user = await User.findOne({ userID });
+    let cart = await Cart.findOne({ userID });
+    
     const authToken = req.cookies.authToken;
     decoded = jwt.decode(authToken);
     finalItems = [];
+    if(!cart){
+      let cartDataFromCookies = decoded.cart;
+      cart = new Cart({ userID, items: cartDataFromCookies });
+      await cart.save();
+    }
 
     for (const item of decoded.cart) {
       const id = item.itemID;
       const i = await Item.findOne({ itemID: id });
       if (!i.isOOS) {
-        if (i.stock > item.qty) {
+        if (i.stock >= item.qty) {
+          
           finalItem = {
             Brand: i.brand,
             Name: i.itemName,
@@ -247,6 +255,13 @@ async function placeOrder(req, res) {
             Quantity: item.qty,
             Cost: item.cost,
           };
+          if(i.stock - item.qty == 0){
+            i.stock -= item.qty;
+            i.isOOS = true;
+          }else{
+            i.stock -= item.qty;
+          }
+          await i.save();
           finalItems.push(finalItem);
         } else {
           return res

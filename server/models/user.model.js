@@ -38,13 +38,7 @@ const itemSchema = new mongoose.Schema({
     price:{type:Number, requried:true},
     stock: {
         type: Number,
-        required: true,
-        validate: {
-            validator: function(value) {
-                return value > 0;
-            },
-            message: `Quantity must be greater than 0!`
-        }
+        required: true
     },
     variants: {
         type: [{
@@ -71,6 +65,36 @@ const cartSchema = new mongoose.Schema({
   expiresAfter: { type: Date, default: Date.now} // Expires after 1 hour
 });
 
+
+// Define the schema for the order
+const orderSchema = new mongoose.Schema({
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the user who placed the order
+    items: [itemSchema], // Array of items in the order
+    totalAmount: { type: Number, required: true },
+    createdAt: { type: String, required: true }, // Storing date and time as a string
+    status: { 
+      type: String, 
+      enum: ['Pending', 'Accepted', 'Shipped', 'Delivered', 'Cancelled', 'Returned'], 
+      default: 'Pending' 
+    }, // Order status with specific values
+    isDisputed: { type: Boolean, default: false }, // Indicates if the order is disputed
+    disputeCreatedAt: { type: String }, // Date of dispute creation
+    paymentMethod: { 
+      type: String, 
+      enum: ['Debit/Credit Card', 'Mobile Wallets', 'Cash On Delivery'], 
+      required: true 
+    }, // Payment method with specific values
+    paymentStatus: { 
+      type: String, 
+      enum: ['Pending', 'Paid'], 
+      required: true,
+      default: 'Pending' 
+    }, // Payment status with specific values
+    // You can add more fields such as shipping information, order status, etc.
+  });
+  
+
+
 function formatDate(date) {
     const d = new Date(date);
     const day = d.getDate().toString().padStart(2, '0');
@@ -79,10 +103,7 @@ function formatDate(date) {
     return `${day}-${month}-${year}`;
 }
 
-mongoose.connect('mongodb+srv://humayunraza5:H1FVqj4nFDrRk9ds@cluster0.nkfc1zg.mongodb.net/', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
+mongoose.connect('mongodb+srv://humayunraza5:H1FVqj4nFDrRk9ds@cluster0.nkfc1zg.mongodb.net/')
 
 // Pre-save middleware to auto-increment userID
 userSchema.pre('save', async function(next) {
@@ -99,6 +120,15 @@ userSchema.pre('save', async function(next) {
         next(error);
     }
 });
+
+// Set the payment status based on the payment method
+orderSchema.pre('save', function(next) {
+    if (this.paymentMethod === 'Cash On Delivery') {
+      this.paymentStatus = 'Paid';
+    }
+    next();
+  });
+  
 
 // Pre-save middleware to auto-increment itemID
 itemSchema.pre('save', async function(next) {
@@ -119,5 +149,6 @@ itemSchema.pre('save', async function(next) {
 const User = mongoose.model('User', userSchema);
 const Item = mongoose.model('Item', itemSchema);
 const Cart = mongoose.model('Cart', cartSchema);
+const Order = mongoose.model('Order', orderSchema);
 
-module.exports = { User, Item,Cart};
+module.exports = { User, Item,Cart,Order};
