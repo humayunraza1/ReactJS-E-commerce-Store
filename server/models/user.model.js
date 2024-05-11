@@ -8,6 +8,7 @@ const counterSchema = new mongoose.Schema({
 
 const userCounter = mongoose.model('Counter', counterSchema);
 const itemCounter = mongoose.model('Counter', counterSchema);
+const orderCounter = mongoose.model('Counter', counterSchema);
 
 // User schema with userID field
 const userSchema = new mongoose.Schema({
@@ -36,15 +37,14 @@ const itemSchema = new mongoose.Schema({
     brand:{type: String, required:true, default:"No brand"},
     datePosted: { type: Date, default: Date.now, set: formatDate, immutable: true }, // Immutable prevents user input
     price:{type:Number, requried:true},
-    stock: {
-        type: Number,
-        required: true
-    },
     variants: {
         type: [{
             Variant: String,
             thumbnail:{type:String, required: true},
-            SKU: { type: String, unique: true }
+            SKU: { type: String, unique: true },
+            stock: {type:Number, required:true},
+            price:{type:Number, required:true},
+            isOOS:{type:Boolean, default:false}
         }],
         default: []
     },
@@ -68,9 +68,9 @@ const cartSchema = new mongoose.Schema({
 
 // Define the schema for the order
 const orderSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Reference to the user who placed the order
-    items: [itemSchema], // Array of items in the order
-    totalAmount: { type: Number, required: true },
+    userID: { type: String , required: true }, // Reference to the user who placed the order
+    orderID:{type:Number, unique:true,immutable:true},
+    cart: [Object], // Array of items in the order
     createdAt: { type: String, required: true }, // Storing date and time as a string
     status: { 
       type: String, 
@@ -78,12 +78,14 @@ const orderSchema = new mongoose.Schema({
       default: 'Pending' 
     }, // Order status with specific values
     isDisputed: { type: Boolean, default: false }, // Indicates if the order is disputed
-    disputeCreatedAt: { type: String }, // Date of dispute creation
+    disputeCreatedAt: { type: String,default:null }, // Date of dispute creation
     paymentMethod: { 
       type: String, 
       enum: ['Debit/Credit Card', 'Mobile Wallets', 'Cash On Delivery'], 
-      required: true 
+      required: true,
+      default:'Cash On Delivery'
     }, // Payment method with specific values
+    totalAmount:{type:Number, required:true},
     paymentStatus: { 
       type: String, 
       enum: ['Pending', 'Paid'], 
@@ -122,7 +124,21 @@ userSchema.pre('save', async function(next) {
 });
 
 // Set the payment status based on the payment method
-orderSchema.pre('save', function(next) {
+orderSchema.pre('save', async function(next) {
+
+    const doc = this;
+    if (!doc.isNew) { // Check if it's a new document to avoid updating existing ones
+        return next();
+    }
+    try {
+        // Find the counter document and increment the sequence value
+        const counter = await orderCounter.findByIdAndUpdate({ _id: 'orderID' }, { $inc: { sequence_value: 1 } }, { new: true, upsert: true });
+        doc.orderID = counter.sequence_value; // Assign the incremented value to the userID field
+        next();
+    } catch (error) {
+        next(error);
+    }
+
     if (this.paymentMethod === 'Cash On Delivery') {
       this.paymentStatus = 'Paid';
     }

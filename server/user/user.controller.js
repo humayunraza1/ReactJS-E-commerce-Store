@@ -1,4 +1,5 @@
-const { User, Item, Cart } = require("../models/user.model");
+const { skipMiddlewareFunction } = require("mongoose");
+const { User, Item, Cart,Order } = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 
 const displayUserDetails = async (req, res) => {
@@ -39,14 +40,14 @@ async function addItemToCart(req, res) {
     let variantThumbnail = ''; // Initialize variant thumbnail
     let cart = await Cart.findOne({ userID });
     let item = await Item.findOne({ itemID });
-
+    let matchingVariant;
     if (!item || !item.variants || !Array.isArray(item.variants)) {
         return res.status(500).send("Invalid item or variants");
     } else {
         if (item.variants.some(variant => variant.SKU === sku)) {
             // Find the variant matching the SKU
-            const matchingVariant = item.variants.find(variant => variant.SKU === sku);
-                        // Set variantName to the value of Variant
+            matchingVariant = item.variants.find(variant => variant.SKU === sku);
+            // Set variantName to the value of Variant
             variantName = matchingVariant.Variant;
             // Set variantThumbnail to the value of thumbnail
             variantThumbnail = matchingVariant.thumbnail;
@@ -76,7 +77,7 @@ async function addItemToCart(req, res) {
     if (!item.isOOS) {
       if (existingItemIndex !== -1) {
         // If the item already exists in the cart, update the quantity
-       if((cart.items[existingItemIndex].qty + quantity) <= item.stock){
+       if((cart.items[existingItemIndex].qty + quantity) <= matchingVariant.stock){
            cart.items[existingItemIndex].qty += quantity
            if (quantity < 0) {
                message = `${quantity} reduced`;
@@ -89,7 +90,7 @@ async function addItemToCart(req, res) {
                 cart.items.splice(existingItemIndex, 1);
             } else {
                 cart.items[existingItemIndex].cost =
-                item.price * cart.items[existingItemIndex].qty;
+                matchingVariant.price * cart.items[existingItemIndex].qty;
             }
         } else{
             return res.status(500).send("Cannot add more of this item")
@@ -105,7 +106,7 @@ async function addItemToCart(req, res) {
         cart.items.push({
           itemID,
           qty: quantity,
-          cost: item.price,
+          cost: matchingVariant.price,
           variant: variantName,
           SKU: sku,
           thumbnail:variantThumbnail
@@ -230,24 +231,28 @@ async function handleExpiredDatabaseEntries() {
 async function placeOrder(req, res) {
   try {
     const { userID } = req.user;
-    const user = await User.findOne({ userID });
     let cart = await Cart.findOne({ userID });
     
-    const authToken = req.cookies.authToken;
+    const authToken = req.cookies?.authToken;
     decoded = jwt.decode(authToken);
     finalItems = [];
     if(!cart){
+      if(!authToken) return res.status(500).send("Cart is empty");
       let cartDataFromCookies = decoded.cart;
       cart = new Cart({ userID, items: cartDataFromCookies });
       await cart.save();
     }
-
+    let totalAmount=0;
     for (const item of decoded.cart) {
       const id = item.itemID;
+      let matchingVariant;
       const i = await Item.findOne({ itemID: id });
-      if (!i.isOOS) {
-        if (i.stock >= item.qty) {
-          
+      if (i.variants.some(variant => variant.SKU === item.SKU )) {
+        matchingVariant = i.variants.find(variant => variant.SKU === item.SKU);
+      }
+      if (!matchingVariant.isOOS) {
+        if (matchingVariant.stock >= item.qty) {
+          totalAmount += item.cost;
           finalItem = {
             Brand: i.brand,
             Name: i.itemName,
@@ -255,11 +260,11 @@ async function placeOrder(req, res) {
             Quantity: item.qty,
             Cost: item.cost,
           };
-          if(i.stock - item.qty == 0){
-            i.stock -= item.qty;
-            i.isOOS = true;
+          if(matchingVariant.stock - item.qty == 0){
+            matchingVariant.stock -= item.qty;
+            matchingVariant.isOOS = true;
           }else{
-            i.stock -= item.qty;
+            matchingVariant.stock -= item.qty;
           }
           await i.save();
           finalItems.push(finalItem);
@@ -278,16 +283,16 @@ async function placeOrder(req, res) {
           });
       }
     }
-    let finalOrder = {
-      cName: user.name,
-      email: user.email,
-      phone: user.number,
-      address: user.address,
-      items: finalItems,
-    };
+    const currentDate = new Date();
+    const formattedDate = formatDate(currentDate);
+    let order = new Order({userID,cart:finalItems,createdAt:formattedDate,totalAmount})
+    await order.save();
+    await Cart.deleteOne({userID});
+    res.clearCookie('authToken');
     return res
       .status(201)
-      .send({ message: "Order placed", OrderDetails: finalOrder });
+      .send({ message: "Order placed",order:order });
+  
   } catch (error) {
     console.log(error);
     return res
@@ -298,6 +303,34 @@ async function placeOrder(req, res) {
 
 // Schedule the function to run every 5 minutes
 const interval = setInterval(handleExpiredDatabaseEntries, 0.5 * 60 * 1000); // Runs every 5 minutes
+
+
+function formatDate(date) {
+  // Get individual date components
+  const day = date.getDate();
+  const month = date.getMonth() + 1; // Month is zero-based
+  const year = date.getFullYear();
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+  
+  // Convert hours to 12-hour format
+  const ampm = hours >= 12 ? 'pm' : 'am';
+  hours %= 12;
+  hours = hours || 12; // Make 0 hours to 12
+  
+  // Pad single digit day, month, hours, minutes, and seconds with leading zeros
+  const formattedDay = String(day).padStart(2, '0');
+  const formattedMonth = String(month).padStart(2, '0');
+  const formattedHours = String(hours).padStart(2, '0');
+  const formattedMinutes = String(minutes).padStart(2, '0');
+  const formattedSeconds = String(seconds).padStart(2, '0');
+  
+  // Construct the formatted date string
+  const formattedDate = `${formattedDay}/${formattedMonth}/${year} ${formattedHours}:${formattedMinutes}:${formattedSeconds} ${ampm}`;
+  
+  return formattedDate;
+}
 
 // Optionally, you can clear the interval when your application exits
 // This prevents the function from continuing to run after the application is stopped
