@@ -68,8 +68,9 @@ const cartSchema = new mongoose.Schema({
 
 // Define the schema for the order
 const orderSchema = new mongoose.Schema({
-    userID: { type: String , required: true }, // Reference to the user who placed the order
+    userID: { type: Number , required: true }, // Reference to the user who placed the order
     orderID:{type:Number, unique:true,immutable:true},
+    customerInfo:{type:Object,required:true},
     cart: [Object], // Array of items in the order
     createdAt: { type: String, required: true }, // Storing date and time as a string
     status: { 

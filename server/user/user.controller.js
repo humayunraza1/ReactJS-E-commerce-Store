@@ -38,7 +38,7 @@ async function addItemToCart(req, res) {
       if(!authToken){
         cart = new Cart({ userID, items: [] });
       }else{
-        decode = jwt.decode(authToken)
+        decoded = jwt.decode(authToken)
         cartData= decoded.cart;
         cart = new Cart({userID, items:cartData})
         await cart.save();
@@ -54,9 +54,15 @@ async function addItemToCart(req, res) {
     if (!matchingVariant) {
       return res.status(500).send("Invalid variant selected");
     }
-
     let message = '';
     const existingItemIndex = cart.items.findIndex(item => item.SKU === sku);
+    if(matchingVariant.isOOS){
+      if (existingItemIndex !== -1){
+        return res.status(500).send("Item or variant is out of stock. Please remove it from cart.")  
+      }
+      return res.status(500).send("Item or variant is out of stock.")
+    }
+    
     if (existingItemIndex !== -1) {
       if ((cart.items[existingItemIndex].qty + quantity) <= matchingVariant.stock) {
         cart.items[existingItemIndex].qty += quantity;
@@ -107,6 +113,7 @@ async function addItemToCart(req, res) {
 async function placeOrder(req, res) {
   try {
     const { userID } = req.user;
+    const user = await User.findOne({userID});
     let cart = await Cart.findOne({ userID });
     const authToken = req.cookies?.authToken;
     let decoded;
@@ -146,6 +153,7 @@ async function placeOrder(req, res) {
             Brand: matchingItem.brand,
             Name: matchingItem.itemName,
             Variant: item.variant,
+            SKU:item.SKU,
             Quantity: item.qty,
             Cost: item.cost,
           });
@@ -157,6 +165,8 @@ async function placeOrder(req, res) {
           } else {
             matchingVariant.stock -= item.qty;
           }
+        } else if(matchingVariant.isOOS){
+          return res.status(500).send("Item is now out of stock. Please remove it from your cart to proceed.")
         } else {
           return res.status(203).send({
             message: `${matchingItem.itemName} invalid quantity entered, try lowering the quantity.`
@@ -175,9 +185,15 @@ async function placeOrder(req, res) {
     // Create and save the order
     const currentDate = new Date();
     const formattedDate = formatDate(currentDate);
-    const order = new Order({ userID, cart: finalItems, createdAt: formattedDate, totalAmount });
+    const customer={
+      name:user.name,
+      address:user.address,
+      number:user.number,
+      email:user.email
+    }
+    console.log(customer);
+    const order = new Order({ userID, customerInfo:customer, cart: finalItems, createdAt: formattedDate, totalAmount });
     await order.save();
-
     // Delete cart and clear authToken cookie
     await Cart.deleteOne({ userID });
     res.clearCookie('authToken');
@@ -189,7 +205,18 @@ async function placeOrder(req, res) {
   }
 }
 
-
+async function getOrderHistory(req,res){
+  try{
+    const {userID} = req.user;
+    const orders = await Order.find({userID})
+    if(!orders){
+      res.status(500).send('No Order To Show.')
+    }
+    return res.status(201).send({message:`${orders.length} orders found`, orderHistory: orders})
+  }catch(err){
+    return res.status(500).send({message:"unknown error occurred.", error:err});
+  }
+}
 // Function to handle expired database entries
 async function handleExpiredDatabaseEntries() {
   try {
@@ -220,6 +247,56 @@ async function handleExpiredDatabaseEntries() {
   } catch (error) {
     console.error("Error handling expired database entries:", error);
   }
+}
+
+
+async function cancelOrder(req,res){
+  try{
+
+    const {userID} = req.user;
+    const {orderID} = req.body;
+    const order = await Order.findOne({orderID})
+      console.log(order)
+    if(!order){
+      return res.status(500).send(`Invalid Order ID provided. If issue persists, relog.`)
+    }else{
+      if(userID !== order.userID){
+      return res.status(500).send("Unauthorized action triggered");
+    }
+  }
+   if(order.status === 'Cancelled'){
+    return res.status(500).send("Order is already cancelled");
+  }
+  if(order.status !== 'Pending'){
+    return res.status(500).send("You can only cancel order if its status is still pending.")
+  }else{
+    for(const item of order.cart){
+      sku = item.SKU;
+      console.log(sku);
+      i = await Item.findOne({ "variants.SKU": sku });
+      const filteredVarIndex = i.variants.findIndex(item => {
+        return item.SKU == sku;
+      });
+      if(!filteredVarIndex){
+        return res.status(500).send("Invalid variant selected.")
+      }
+      if(i.variants[filteredVarIndex].isOOS){
+        i.variants[filteredVarIndex].stock += item.Quantity;
+        i.variants[filteredVarIndex].isOOS = false;
+        await i.save();
+      }else{
+        i.variants[filteredVarIndex].stock += item.Quantity;
+        await i.save();
+      }
+    }
+    order.status = "Cancelled";
+    await order.save();
+    return res.status(201).send("Order cancelled");
+  }
+}catch(err){
+  console.log(err)
+  return res.status(500).send({message:'Unknown error occurred',error:err});
+}
 }
 
 // Schedule the function to run every 5 minutes
@@ -259,4 +336,4 @@ process.on("exit", () => {
   clearInterval(interval);
 });
 
-module.exports = { displayUserDetails, addItemToCart, placeOrder };
+module.exports = { displayUserDetails, addItemToCart, placeOrder,getOrderHistory,cancelOrder };
