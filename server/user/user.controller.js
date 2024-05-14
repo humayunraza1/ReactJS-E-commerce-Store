@@ -23,6 +23,23 @@ function updateCartInAuthToken(token, cartData) {
   return updatedToken;
 }
 
+
+async function getCart(req,res){
+  const {userID} = req.user;
+  if(!userID){
+    return res.status(500).send({message:"Please login.",cart:[]});
+  }
+  const cart = await Cart.findOne({userID});
+  if(!cart ){
+    return res.status(200).send({message:"cart is empty", cart:[]});
+  }else{
+    const updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
+    res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 86400000 });
+    return res.status(200).send({message:"Cart retrieved.", cart:cart.items});
+  }
+}
+
+
 async function addItemToCart(req, res) {
   try {
     const { userID } = req.user;
@@ -35,8 +52,8 @@ async function addItemToCart(req, res) {
 
     let cart = await Cart.findOne({ userID });
     if (!authToken) {
-      if (!cart) {
-        return res.status(500).send("Cart is empty");
+      if (!cart) { 
+        cart = new Cart({userID, items:[]})
       } else {
         const updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
         res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 86400000 });
@@ -382,4 +399,4 @@ process.on("exit", () => {
   clearInterval(interval);
 });
 
-module.exports = { displayUserDetails, addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU };
+module.exports = { displayUserDetails, addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart };
