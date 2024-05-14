@@ -34,17 +34,18 @@ async function addItemToCart(req, res) {
     }
 
     let cart = await Cart.findOne({ userID });
-    if (!cart) {
-      if(!authToken){
-        cart = new Cart({ userID, items: [] });
-      }else{
-        decoded = jwt.decode(authToken)
-        cartData= decoded.cart;
-        cart = new Cart({userID, items:cartData})
-        await cart.save();
+    if (!authToken) {
+      if (!cart) {
+        return res.status(500).send("Cart is empty");
+      } else {
+        const updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
+        res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 86400000 });
       }
+    } else {
+      // Cart exists in the database, populate cartData from the cart
+      decoded = jwt.decode(authToken);
+      cartData = decoded.cart;
     }
-
     let item = await Item.findOne({ itemID });
     if (!item || !item.variants || !Array.isArray(item.variants)) {
       return res.status(500).send("Invalid item or variants");
@@ -102,7 +103,7 @@ async function addItemToCart(req, res) {
     await cart.save();
 
     const updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
-    res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 3600000 }); // 1 hour expiry
+    res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 86400000 }); // 1 hour expiry
 
     return res.status(201).send({ message: message, item: cart.items });
   } catch (error) {
@@ -123,18 +124,17 @@ async function placeOrder(req, res) {
     
     // Fetch cart data from database or decoded token
     let cartData;
-    if (!cart) {
-      if (!authToken) {
+    if (!authToken) {
+      if (!cart) {
         return res.status(500).send("Cart is empty");
       } else {
-        decoded = jwt.decode(authToken);
-        cartData = decoded.cart;
-        cart = new Cart({ userID, items: cartData });
-        await cart.save();
+        const updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
+        res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 86400000 });
       }
     } else {
       // Cart exists in the database, populate cartData from the cart
-      cartData = cart.items;
+      decoded = jwt.decode(authToken);
+      cartData = decoded.cart;
     }
 
     // Fetch item details for all items in the cart
@@ -235,9 +235,9 @@ async function handleExpiredDatabaseEntries() {
       return;
     }
 
-    // Calculate the minimum expiration time required (2 minutes ago)
-    const minExpirationTime = Date.now() - 2 * 60 * 1000;
-
+    // Calculate the minimum expiration time required (2 days)
+    
+    const minExpirationTime = Date.now() - (2 * 24 * 60 * 60 * 1000);
     // Iterate over each cart and check if it has expired
     for (const cart of carts) {
       // If expiration time is at least 2 minutes ago, delete the entry
@@ -316,7 +316,7 @@ async function deleteItemFromCartBySKU(req, res) {
         return res.status(500).send('Cart not found, please re-log.');
       } else {
         const updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
-        res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 3600000 });
+        res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 86400000 });
       }
     }
     
@@ -325,7 +325,7 @@ async function deleteItemFromCartBySKU(req, res) {
     let decodedCart = decode.cart;
     const updatedItems = decodedCart.filter(item => item.SKU !== SKU);
     const updatedToken = updateCartInAuthToken(req.headers.authorization, updatedItems);
-    res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 3600000 });
+    res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 86400000 });
     
     console.log('Item left in cart:', updatedItems);
     if(updatedItems.length == 0){
