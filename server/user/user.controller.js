@@ -58,6 +58,7 @@ async function addItemToCart(req, res) {
     const existingItemIndex = cart.items.findIndex(item => item.SKU === sku);
     if(matchingVariant.isOOS){
       if (existingItemIndex !== -1){
+        deleteItemFromCartBySKU(userID, item.SKU)
         return res.status(500).send("Item or variant is out of stock. Please remove it from cart.")  
       }
       return res.status(500).send("Item or variant is out of stock.")
@@ -74,8 +75,10 @@ async function addItemToCart(req, res) {
         if (cart.items[existingItemIndex].qty <= 0) {
           message = `${matchingVariant.Variant} ${item.itemName} removed from cart`;
           cart.items.splice(existingItemIndex, 1);
+          cart.expiresAfter = Date.now();
         } else {
           cart.items[existingItemIndex].cost = matchingVariant.price * cart.items[existingItemIndex].qty;
+          cart.expiresAfter = Date.now();
         }
       } else {
         return res.status(500).send("Cannot add more of this item");
@@ -166,6 +169,7 @@ async function placeOrder(req, res) {
             matchingVariant.stock -= item.qty;
           }
         } else if(matchingVariant.isOOS){
+          deleteItemFromCartBySKU(userID, item.SKU)
           return res.status(500).send("Item is now out of stock. Please remove it from your cart to proceed.")
         } else {
           return res.status(203).send({
@@ -252,7 +256,6 @@ async function handleExpiredDatabaseEntries() {
 
 async function cancelOrder(req,res){
   try{
-
     const {userID} = req.user;
     const {orderID} = req.body;
     const order = await Order.findOne({orderID})
@@ -299,6 +302,49 @@ async function cancelOrder(req,res){
 }
 }
 
+// Define a function to delete a specific item from the items array based on SKU
+async function deleteItemFromCartBySKU(req, res) {
+  try {
+    const { userID } = req.user;
+    const { SKU } = req.body;
+    let authToken = req.cookies.authToken;
+    let cart;
+    
+    if (!authToken) {
+      cart = await Cart.findOne({ userID });
+      if (!cart) {
+        return res.status(500).send('Cart not found, please re-log.');
+      } else {
+        const updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
+        res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 3600000 });
+      }
+    }
+    
+    authToken = req.cookies.authToken;
+    const decode = jwt.decode(authToken);
+    let decodedCart = decode.cart;
+    const updatedItems = decodedCart.filter(item => item.SKU !== SKU);
+    const updatedToken = updateCartInAuthToken(req.headers.authorization, updatedItems);
+    res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 3600000 });
+    
+    console.log('Item left in cart:', updatedItems);
+    if(updatedItems.length == 0){
+      await Cart.deleteOne({userID});
+      res.clearCookie('authToken');
+      return res.status(200).send("Cart is now empty");
+    }else{
+      await Cart.findOneAndUpdate({userID:userID},{items:updatedItems,expiresAfter:Date.now()},{new:true}); // Await the update operation
+    }
+    
+    // Correct the send statement
+    return res.status(200).send(updatedItems); // Remove the "Item deleted" string from the status
+  } catch (error) {
+    console.error('Error deleting item from cart:', error);
+    return res.status(500).send("Unknown error occurred.");
+  }
+}
+
+
 // Schedule the function to run every 5 minutes
 const interval = setInterval(handleExpiredDatabaseEntries, 0.5 * 60 * 1000); // Runs every 5 minutes
 
@@ -336,4 +382,4 @@ process.on("exit", () => {
   clearInterval(interval);
 });
 
-module.exports = { displayUserDetails, addItemToCart, placeOrder,getOrderHistory,cancelOrder };
+module.exports = { displayUserDetails, addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU };
