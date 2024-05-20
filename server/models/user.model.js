@@ -14,8 +14,8 @@ const orderCounter = mongoose.model('Counter', counterSchema);
 const userSchema = new mongoose.Schema({
     userID: { type: Number, unique: true, immutable: true }, // Immutable prevents user input
     name: { type: String, required: true },
-    address: {type: String, requried:true},
-    number:{type:String, required:true},
+    address: {type: String, default:null},
+    number:{type:String, defualt:null},
     role: {
         type: String,
         enum: ["Admin", "User"],
@@ -23,7 +23,8 @@ const userSchema = new mongoose.Schema({
         immutable: true // Immutable prevents user input
     },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    password: { type: String, required: true },
+    googleId: { type: String, unique: true },
+    password: { type: String },
     resetPasswordToken: { type: String, default: null, immutable: true }, // Immutable prevents user input
     resetPasswordExpires: { type: String, default: null, immutable: true } // Immutable prevents user input
 });

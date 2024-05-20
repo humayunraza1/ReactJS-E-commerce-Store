@@ -1,6 +1,7 @@
 const { skipMiddlewareFunction } = require("mongoose");
 const { User, Item, Cart,Order } = require("../models/user.model");
 const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt');
 
 const displayUserDetails = async (req, res) => {
   const { userID } = req.user;
@@ -23,6 +24,51 @@ function updateCartInAuthToken(token, cartData) {
   return updatedToken;
 }
 
+
+// Update Profile Settings
+
+async function updateProfile(req,res){
+  const {userID} = req.user;
+  const user = await User.findOne({userID});
+  if(!user){
+    return res.status(500).send("Invalid request passed, kindly relog.")
+  }
+  const {address,newPassword,confirmPassword,oldPassword,email} = req.body;
+  if(address){
+    user.address = address;
+    await user.save();
+    return res.status(200).send("Address successfully updated");
+  }
+  if(newPassword && confirmPassword && oldPassword){
+    if(await bcrypt.compare(oldPassword, user.password)){
+      if(await bcrypt.compare(newPassword, user.password)){
+        return res.status(200).send("Password cannot be same as the old password.")
+      }else{
+        if(newPassword !== confirmPassword){
+          return res.status(500).send("New password dont match");
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10)
+        user.password = hashedPassword;
+        await user.save()
+        return res.status(200).send("Password successfuly updated")
+      }
+      
+    }
+  }
+  if(email){
+    const checkUser = await User.findOne({email});
+    if(checkUser){
+      return res.status(200).send("Email already in use")
+    }else{
+      user.email = email;
+      await user.save();
+      return res.status(200).send("Email successfuly updated");
+    }
+  }
+  return res.status(500).send("Invalid data passed")
+}
+
+// 
 
 async function getCart(req,res){
   const {userID} = req.user;
@@ -399,4 +445,4 @@ process.on("exit", () => {
   clearInterval(interval);
 });
 
-module.exports = { displayUserDetails, addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart };
+module.exports = { displayUserDetails, addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart,updateProfile };

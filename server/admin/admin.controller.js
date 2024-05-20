@@ -1,4 +1,4 @@
-const {User,Item} = require('../models/user.model');
+const {User,Item,Order} = require('../models/user.model');
 const { v4: uuidv4 } = require('uuid');
 
 function generateShortUUID() {
@@ -16,6 +16,36 @@ const adminDashboard = async (req, res) => {
     const user = await User.findOne({ userID });
     console.log(userID)
     return res.status(201).send({message:"Loaded details", user:user});
+}
+
+async function getOrders(req,res){
+    const {userID} = req.user;
+    const user = await User.findOne({userID});
+    if(user.role !== "Admin"){
+        return res.status(500).send("Unauthorized");
+    }
+    const orders = await Order.find();
+    console.log(orders)
+    if(orders.length == 0){
+        return res.status(200).send({message:"No orders found", orders:[]})
+    }
+    return res.status(200).send({message: `found ${orders.length}`, orders})
+}
+
+async function updateStatus(req,res){
+    const {userID} = req.user;
+    const user = await User.findOne({userID});
+    if(user.role !== 'Admin'){
+        return res.status(500).send("Unauthorized.")
+    }
+    const {orderID,updateStatus} = req.body;
+    const order = await Order.findOne({orderID});
+    if(!order){
+        return res.status(500).send("Invalid order id passed. Kindly select the right order")
+    }
+    order.status = updateStatus;
+    await order.save()
+    return res.status(200).send({order: `Order ${orderID} status updated to ${order.status}`})
 }
 
 const addItem = async (req, res) => {
@@ -42,4 +72,4 @@ const addItem = async (req, res) => {
 
 
 
-module.exports = {adminDashboard,addItem};
+module.exports = {adminDashboard,addItem,getOrders,updateStatus};
