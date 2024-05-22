@@ -24,6 +24,41 @@ function updateCartInAuthToken(token, cartData) {
   return updatedToken;
 }
 
+// 
+
+async function openDispute(req,res){
+  const {userID} = req.user;
+  const {orderID,reason, description} = req.body;
+
+  const order = await Order.findOne({orderID});
+  if(!order){
+    return res.status(500).send("Invalid Order ID");
+  }
+
+  if (order.userID !== userID){
+    return res.status(500).send("You cannot open dispute for this order");
+  }
+  
+  if(order.isDisputed){
+    return res.status(500).send("Order already disputed, kindly wait.")
+  }
+
+  if(!description || description.length < 5){
+    return res.status(500).send("description too short. Please write minimum 5 words")
+  }
+
+  const currentDate = new Date();
+
+  order.isDisputed = true;
+  order.disputeStatus = 'Open'
+  order.disputeCreatedAt = formatDate(currentDate);
+  order.disputeReason = reason;
+  order.disputeDescription = description;
+
+  await order.save();
+
+  return res.status(200).send(`Dispute created for order id: ${orderID}`)
+}
 
 // Update Profile Settings
 
@@ -445,4 +480,4 @@ process.on("exit", () => {
   clearInterval(interval);
 });
 
-module.exports = { displayUserDetails, addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart,updateProfile };
+module.exports = { displayUserDetails,openDispute, addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart,updateProfile };

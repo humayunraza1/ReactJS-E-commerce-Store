@@ -79,8 +79,15 @@ const orderSchema = new mongoose.Schema({
       enum: ['Pending', 'Accepted', 'Shipped', 'Delivered', 'Cancelled', 'Returned'], 
       default: 'Pending' 
     }, // Order status with specific values
+    disputeStatus: { 
+        type: String, 
+        enum: ['Open','Closed'], 
+        default: null 
+      }, 
     isDisputed: { type: Boolean, default: false }, // Indicates if the order is disputed
     disputeCreatedAt: { type: String,default:null }, // Date of dispute creation
+    disputeReason: {type: String, enum:['Product not as described', 'Not delivered yet','Damaged or defective items','Billing issues','null'], default:'null'},
+    disputeDescription:String,
     paymentMethod: { 
       type: String, 
       enum: ['Debit/Credit Card', 'Mobile Wallets', 'Cash On Delivery'], 
