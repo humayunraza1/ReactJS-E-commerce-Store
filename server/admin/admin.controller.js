@@ -32,6 +32,29 @@ async function getOrders(req,res){
     return res.status(200).send({message: `found ${orders.length}`, orders})
 }
 
+async function handleDispute(req,res){
+    const {userID} = req.user;
+    const user = await User.findOne({userID});
+    const {orderID} = req.body;
+    const order = await Order.findOne({orderID})
+    if(user.role !== "Admin"){
+        return res.status(500).send("Unauthorized");
+    }
+
+    if(!order.isDisputed){
+        return res.status(200).send("Order not disputed");
+    }
+
+    if(order.disputeStatus == 'Closed'){
+        return res.status(200).send("Dispute already closed");
+    }
+
+    order.disputeStatus = 'Closed';
+    await order.save();
+
+    return res.status(200).send(`Order ${orderID}'s dispute closed`);
+}
+
 async function updateStatus(req,res){
     const {userID} = req.user;
     const user = await User.findOne({userID});
@@ -72,4 +95,4 @@ const addItem = async (req, res) => {
 
 
 
-module.exports = {adminDashboard,addItem,getOrders,updateStatus};
+module.exports = {adminDashboard,addItem,getOrders,updateStatus,handleDispute};
