@@ -104,7 +104,10 @@ const orderSchema = new mongoose.Schema({
     // You can add more fields such as shipping information, order status, etc.
   });
   
-
+const wishlistSchema = new mongoose.Schema({
+    userID:{type:String,required:true},
+    items: [Object] 
+})
 
 function formatDate(date) {
     const d = new Date(date);
@@ -175,5 +178,6 @@ const User = mongoose.model('User', userSchema);
 const Item = mongoose.model('Item', itemSchema);
 const Cart = mongoose.model('Cart', cartSchema);
 const Order = mongoose.model('Order', orderSchema);
+const wishList = mongoose.model('Wishlist', wishlistSchema);
 
-module.exports = { User, Item,Cart,Order};
+module.exports = { User, Item,Cart,Order,wishList};

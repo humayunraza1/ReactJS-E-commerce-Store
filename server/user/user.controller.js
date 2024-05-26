@@ -1,5 +1,4 @@
-const { skipMiddlewareFunction } = require("mongoose");
-const { User, Item, Cart,Order } = require("../models/user.model");
+const { User, Item, Cart,Order,wishList} = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const bcrypt = require('bcrypt');
 
@@ -25,6 +24,46 @@ function updateCartInAuthToken(token, cartData) {
 }
 
 // 
+
+async function addWishlist(req,res){
+  const {userID} = req.user;
+  const {itemID, SKU} = req.body;
+  const item = await Item.findOne({itemID});
+  const matchingVariant = item.variants.find(variant => variant.SKU === SKU);
+  let wishlist = await wishList.findOne({userID})
+  let items = []
+  if(!wishlist){
+    wishlist = new wishList({userID, items:[]})
+  }else{
+    items = wishlist.items;
+    let matchingIndex = items.findIndex(item => (item.itemID == itemID) && (item.SKU == SKU));
+    if(matchingIndex > -1){
+      let i = items[matchingIndex];
+      items.splice(matchingIndex,1)
+      wishlist.items = items;
+      if(wishlist.items.length == 0){
+        await wishList.deleteOne({userID});
+        return res.status(200).send(`${i.variant} - ${i.itemName} removed. Wishlist is now empty. `)
+      }
+      await wishlist.save();
+      return res.status(200).send({message:`${i.variant} - ${i.itemName} removed from wishlist`,wl:wishlist.items})
+    }
+  }
+  const itemInfo = {
+    itemID: item.itemID,
+    itemName: item.itemName,
+    thumbnail:matchingVariant.thumbnail,
+    SKU: SKU,
+    variant:  matchingVariant.Variant,
+    price:  matchingVariant.price,
+    isOOS:  matchingVariant.isOOS 
+  }
+  items.push(itemInfo);
+  wishlist.items = items;
+  await wishlist.save()
+  return res.status(200).send({message:`${itemInfo.variant} - ${itemInfo.itemName} added to wishlist`, wl:wishlist.items})
+} 
+
 
 async function openDispute(req,res){
   const {userID} = req.user;
@@ -480,4 +519,4 @@ process.on("exit", () => {
   clearInterval(interval);
 });
 
-module.exports = { displayUserDetails,openDispute, addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart,updateProfile };
+module.exports = { displayUserDetails,openDispute, addWishlist,addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart,updateProfile };
