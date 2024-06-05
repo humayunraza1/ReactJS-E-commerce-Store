@@ -61,6 +61,28 @@ const googleAuthHandler = (req, res) => {
 // End Of Google Login
 
 
+const handleRefreshToken = async (req, res) => {
+  const cookies = req.cookies;
+    if (!cookies?.refreshToken) {
+      return res.sendStatus(401)
+    }
+    console.log(cookies.refreshToken)
+    const refreshToken = cookies.refreshToken;
+    const user = await User.findOne({refreshToken})
+    if(!user) return res.sendStatus(403) // Frobidden
+
+    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+                    if (err || user.userID !== decoded.userID) {
+                      return res.sendStatus(403);
+                    }
+                    // Update the user object with a new expiration time
+                    decoded.exp = Math.floor(Date.now() / 1000) + 30; // 30s
+                    const newToken = jwt.sign(decoded, process.env.JWT_SECRET);
+                    res.json({newToken})
+                  });
+};
+
+
 const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -69,7 +91,7 @@ const registerUser = async (req, res) => {
       return res.status(400).send('Email already registered!');
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword });
+    const user = new User({ name, email, password: hashedPassword, googleId:"null" });
     await user.save();
     res.status(201).send('User registered successfully!');
   } catch (error) {
@@ -81,33 +103,35 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(email,password)
     const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).send('Invalid email or password!');
     }
-    const token = generateJWT(user.userID);
-    const refreshToken = generateRefreshToken(user.userID);
-    res.cookie('token', token, {
-      httpOnly: true,
-      maxAge: 3600000 // expires in 1 hour
-    });
+    const userInfo = {userID: user.userID, role: user.role}
+    const token = generateJWT(userInfo);
+    const refreshToken = generateRefreshToken(userInfo);
+    user.refreshToken = refreshToken;
+    await user.save();
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
+      sameSite: 'None', // Required for cross-site cookies
+      secure: false, // Set to true if using HTTPS
       maxAge: 604800000 // expires in 7 days
     });
-    return res.status(201).send({message:"Loggedin Successfuly", token:token,refreshToken:refreshToken});
+    return res.status(201).send({message:"Loggedin Successfuly", user:userInfo, token:token});
   } catch (error) {
-    res.status(500).send('Error logging in user!');
+    return res.status(500).send('Error logging in user!');
   }
 };
 
-const generateJWT = (userID) => {
-  console.log("user id: ",userID)
-  return jwt.sign({userID: userID }, process.env.JWT_SECRET, { expiresIn: '1h' });
+const generateJWT = (user) => {
+  console.log("user : ",user)
+  return jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '30s' });
 };
 
-const generateRefreshToken = (userID) => {
-  return jwt.sign({userID: userID }, process.env.JWT_SECRET, { expiresIn: '7d' });
+const generateRefreshToken = (user) => {
+  return jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '7d' });
 };
 
 const sendPasswordResetEmail = async (req, res) => {
@@ -206,6 +230,35 @@ const confirmPassword = async (req, res) => {
     res.status(500).send('Error resetting password');
   }
 };
+
+async function handleLogout(req,res){
+  const cookies = req.cookies;
+  if(!cookies?.refreshToken) return res.sendStatus(204);
+
+  const refreshToken = cookies.refreshToken;
+  
+  const user = await User.findOne({refreshToken})
+  if(!user){
+    res.clearCookie('refreshToken',{
+      httpOnly: true,
+      sameSite: 'None', // Required for cross-site cookies
+      secure: false, // Set to true if using HTTPS
+      maxAge: 604800000 // expires in 7 days
+    });
+    return res.sendStatus(204);
+  }
+
+  user.refreshToken = null;
+  await user.save();
+  res.clearCookie('refreshToken',{
+    httpOnly: true,
+    sameSite: 'None', // Required for cross-site cookies
+    secure: false, // Set to true if using HTTPS
+    maxAge: 604800000 // expires in 7 days
+  });
+  return res.sendStatus(204);
+}
+
 module.exports = { 
   registerUser, 
   loginUser,
@@ -216,5 +269,7 @@ module.exports = {
   confirmPassword,
   googleAuth,
   googleAuthCallback,
-  googleAuthHandler
+  googleAuthHandler,
+  handleRefreshToken,
+  handleLogout
 };

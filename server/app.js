@@ -3,7 +3,13 @@ const app = express();
 const authRoutes = require('../server/api/auth/auth.routes');
 const userRoutes = require('../server/user/user.routes')
 const adminRoutes = require('../server/admin/admin.routes')
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
+// Use CORS with specific origin
+app.use(cors({
+  origin: 'http://localhost:5000', // Replace with your client URL
+  credentials: true // If you need to include cookies in the requests
+}));
 
 app.use(express.json());
 app.use(cookieParser());

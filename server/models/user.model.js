@@ -23,8 +23,9 @@ const userSchema = new mongoose.Schema({
         immutable: true // Immutable prevents user input
     },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    googleId: { type: String, unique: true },
+    googleId: { type: String, default:null ,sparse: true},
     password: { type: String },
+    refreshToken: {type:String, default:null},
     resetPasswordToken: { type: String, default: null, immutable: true }, // Immutable prevents user input
     resetPasswordExpires: { type: String, default: null, immutable: true } // Immutable prevents user input
 });

@@ -22,7 +22,7 @@ async function getOrders(req,res){
     const {userID} = req.user;
     const user = await User.findOne({userID});
     if(user.role !== "Admin"){
-        return res.status(500).send("Unauthorized");
+        return res.status(401).send("Unauthorized");
     }
     const orders = await Order.find();
     console.log(orders)

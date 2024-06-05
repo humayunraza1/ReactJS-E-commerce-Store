@@ -1,6 +1,6 @@
 const express = require('express');
 const { displayUserDetails,addItemToCart,openDispute, addWishlist,updateProfile,placeOrder,getOrderHistory,cancelOrder,getCart,deleteItemFromCartBySKU} = require('./user.controller');
-const authenticate = require('../middleware/authenticate');
+const {authenticate} = require('../middleware/authenticate');
 const router = express.Router();
 
 router.get('/dashboard',authenticate, displayUserDetails);
