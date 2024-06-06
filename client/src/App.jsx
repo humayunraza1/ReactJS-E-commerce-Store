@@ -10,6 +10,7 @@ import Layout from "./components/Layout";
 import RequireAuth from "./components/RequireAuth";
 import Unauthorized from "./pages/Unauthorized";
 import AdminDashboard from "./pages/AdminDashboard";
+import PersistLogin from "./components/PersistLogin";
 function App () {
   const {auth} = useContext(AuthContext)
     return (
@@ -25,11 +26,13 @@ function App () {
         <Route path="*" element={<NotFound/>}/>
         
         {/* Protected Routes */}
+        <Route element={<PersistLogin />}>
         <Route element={<RequireAuth allowedRole={"Admin"}/>}> 
         <Route path="admin" element={ <AdminDashboard />} />
         </Route>
         <Route element={<RequireAuth allowedRole={"User"}/>}> 
         <Route path="settings" element={ <UserDashboard />} />
+        </Route>
         </Route>
       </Route>
     </Routes>

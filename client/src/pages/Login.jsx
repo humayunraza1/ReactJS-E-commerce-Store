@@ -31,7 +31,7 @@ function Login () {
                 });
             const accessToken = response?.data?.token
             console.log(response.data)
-            setAuth({email:logindetails.email,user:response.data.user,token:accessToken})
+            setAuth({user:response.data.user,token:accessToken})
             navigate(from,{replace:true});
        
         }catch(err){

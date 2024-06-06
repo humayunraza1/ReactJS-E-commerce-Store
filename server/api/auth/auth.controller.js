@@ -64,7 +64,7 @@ const googleAuthHandler = (req, res) => {
 const handleRefreshToken = async (req, res) => {
   const cookies = req.cookies;
     if (!cookies?.refreshToken) {
-      return res.sendStatus(401)
+      return res.status(401).send("No refresh token cookie found")
     }
     console.log(cookies.refreshToken)
     const refreshToken = cookies.refreshToken;
@@ -76,9 +76,9 @@ const handleRefreshToken = async (req, res) => {
                       return res.sendStatus(403);
                     }
                     // Update the user object with a new expiration time
-                    decoded.exp = Math.floor(Date.now() / 1000) + 30; // 30s
+                    decoded.exp = Math.floor(Date.now() / 1000) + 60 * 60 * 1; // 1h
                     const newToken = jwt.sign(decoded, process.env.JWT_SECRET);
-                    res.json({newToken})
+                    res.json({user:{userID:user.userID,role:user.role}, newToken})
                   });
 };
 
@@ -115,9 +115,9 @@ const loginUser = async (req, res) => {
     await user.save();
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
+      secure: true,
       sameSite: 'None', // Required for cross-site cookies
-      secure: false, // Set to true if using HTTPS
-      maxAge: 604800000 // expires in 7 days
+      maxAge: 1000 * 60 * 60 * 24 * 3 // expires in 3 days
     });
     return res.status(201).send({message:"Loggedin Successfuly", user:userInfo, token:token});
   } catch (error) {
@@ -127,11 +127,11 @@ const loginUser = async (req, res) => {
 
 const generateJWT = (user) => {
   console.log("user : ",user)
-  return jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '30s' });
+  return jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
 const generateRefreshToken = (user) => {
-  return jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '7d' });
+  return jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '3d' });
 };
 
 const sendPasswordResetEmail = async (req, res) => {
@@ -253,8 +253,8 @@ async function handleLogout(req,res){
   res.clearCookie('refreshToken',{
     httpOnly: true,
     sameSite: 'None', // Required for cross-site cookies
-    secure: false, // Set to true if using HTTPS
-    maxAge: 604800000 // expires in 7 days
+    secure: true, // Set to true if using HTTPS
+    maxAge: 1000 * 60 * 60 * 24 // expires in 1 day
   });
   return res.sendStatus(204);
 }
