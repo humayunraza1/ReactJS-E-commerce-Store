@@ -17,7 +17,6 @@ function App () {
     <Routes>
       <Route path="/" element={<Layout/>}>
         {/* Public Routes */}
-        <Route path="/" element={<Store />} />
         <Route path="register" element={ <Register />} />
         <Route path="login" element={ <Login />} />
         <Route path="unauthorized" element={ <Unauthorized />} />
@@ -27,6 +26,7 @@ function App () {
         
         {/* Protected Routes */}
         <Route element={<PersistLogin />}>
+        <Route path="/" element={<Store />} />
         <Route element={<RequireAuth allowedRole={"Admin"}/>}> 
         <Route path="admin" element={ <AdminDashboard />} />
         </Route>

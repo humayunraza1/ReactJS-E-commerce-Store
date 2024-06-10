@@ -9,7 +9,7 @@ function Unauthorized () {
   return (
     <div>
       You are not authorized to be here
-      <Link to={goBack()}>Go Back</Link>
+      <Link onClick={goBack}>Go Back</Link>
     </div>
   )
 };
