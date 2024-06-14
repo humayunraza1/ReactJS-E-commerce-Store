@@ -234,7 +234,7 @@ useEffect(()=>{
         </Transition>
 
       </Popover>
-    </PopoverGroup></div>   :         <a onClick={()=>Navigate('/login')} className="text-sm font-semibold leading-6">
+    </PopoverGroup></div>   :         <a onClick={()=>navigate('/login')} className="text-sm font-semibold leading-6">
             Log in <span aria-hidden="true">&rarr;</span>
           </a>
           }

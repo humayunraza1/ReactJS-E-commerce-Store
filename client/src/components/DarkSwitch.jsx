@@ -14,11 +14,11 @@ return (<ConfigProvider theme={{
  components:{
   Switch:{
       colorPrimary: 'black',
-      colorPrimaryHover: '#000'
+      colorPrimaryHover: '#000',
   }
   }
 }}>
-<Switch defaultChecked={darkMode} onChange={onChange} />
+<Switch className={`${darkMode ? 'border-white':'border-none'} border-2 border-white`} defaultChecked={darkMode} onChange={onChange} />
 </ConfigProvider>
 )};
 export default DarkSwitch;

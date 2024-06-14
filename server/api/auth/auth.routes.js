@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, sendPasswordResetEmail,resetPassword,confirmPassword,handleRefreshToken,googleAuth,googleAuthCallback, googleAuthHandler, handleLogout} = require('./auth.controller');
+const { registerUser, loginUser, sendPasswordResetEmail,resetPassword,confirmPassword,handleRefreshToken,googleLogin, handleLogout} = require('./auth.controller');
 const { authenticate } = require('../../middleware/authenticate');
 
     router.post('/register', registerUser);
@@ -11,8 +11,7 @@ router.post('/reset-password', confirmPassword);
 router.get('/refresh', handleRefreshToken)
 router.get('/authenticate', authenticate)
 router.get('/logout',handleLogout)
-router.get('/google', googleAuth);
-router.get('/google/callback', googleAuthCallback, googleAuthHandler);
+router.post('/google', googleLogin);
 
 router.get('/',(req,res)=>{
     res.send('Hello')

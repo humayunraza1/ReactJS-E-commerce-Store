@@ -3,63 +3,36 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
 require('dotenv').config();
 
-// Google Login 
 
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: 'http://localhost:3000/api/auth/google/callback',
-  passReqToCallback: true
-}, async (accessToken, refreshToken, profile, done) => {
-  try {
-    let user = await User.findOne({ googleId: profile.id });
-    if (!user) {
-      user = new User({
-        name: profile.displayName,
-        email: profile.emails[0].value,
-        googleId: profile.id,
-        // Add any default values for required fields
-      });
-      await user.save();
-    }
-    return done(null, user);
-  } catch (error) {
-    return done(error, null);
-  }
-}));
 
-passport.serializeUser((user, done) => {
-  done(null, user.id);
+async function googleLogin(req,res){
+  const {id,email,name} = req.body
+  console.log('Google:' , {id:id, email:email, name:name})
+  let user = await User.findOne({email});
+  console.log(user)
+  if(!user){
+    user = new User({googleId:id,email,name})
+    await user.save();
+    user = await User.findOne({googleId:id})
+ } 
+ if(user && user.googleId !== id) {
+      return res.status(403).send("Account already registered with that email.")
+  } 
+const userInfo = {userID:user.userID, role:user.role}
+const token = generateJWT(userInfo)
+const refreshToken = generateRefreshToken(userInfo)
+user.refreshToken = refreshToken;
+await user.save();
+res.cookie('refreshToken', refreshToken, {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'None', // Required for cross-site cookies
+  maxAge: 1000 * 60 * 60 * 24 * 3 // expires in 3 days
 });
-
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (error) {
-    done(error, null);
-  }
-});
-
-const googleAuth = passport.authenticate('google', { scope: ['profile', 'email'] });
-
-const googleAuthCallback = passport.authenticate('google', { failureRedirect: '/' });
-
-const googleAuthHandler = (req, res) => {
-  const token = generateJWT(req.user.id);
-  res.cookie('token', token, {
-    httpOnly: true,
-    maxAge: 3600000 // 1 hour
-  });
-  res.redirect('/profile'); // Redirect to profile or home page after successful login
-};
-
-// End Of Google Login
-
+return res.status(200).send({token:token, user:userInfo, msg:"Logged In Successfuly"})
+}
 
 const handleRefreshToken = async (req, res) => {
   const cookies = req.cookies;
@@ -267,9 +240,7 @@ module.exports = {
   sendPasswordResetEmail,
   resetPassword,
   confirmPassword,
-  googleAuth,
-  googleAuthCallback,
-  googleAuthHandler,
   handleRefreshToken,
-  handleLogout
+  handleLogout,
+  googleLogin
 };

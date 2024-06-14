@@ -1,7 +1,8 @@
 import React from 'react';
 import { LaptopOutlined, NotificationOutlined, UserOutlined } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import { Breadcrumb, Col, Layout, Menu, Row, theme } from 'antd';
 import Hero from './Hero';
+import ProductCard from './ProductCard';
 const { Header, Content, Footer, Sider } = Layout;
 const items1 = ['1', '2', '3'].map((key) => ({
   key,
@@ -64,7 +65,98 @@ const Design = () => {
               minHeight: 280,
             }}
           >
-            Content
+            <Row gutter={[16, 24]}>
+            <Col className="gutter-row"
+                                xs={{
+                                  flex: '100%',
+                                }}
+                                sm={{
+                                  flex: '50%',
+                                }}
+                                md={{
+                                  flex: '40%',
+                                }}
+                                lg={{
+                                  flex: '20%',
+                                }}
+                                xl={{
+                                  flex: '10%',
+                                }}>
+            <ProductCard/>
+            </Col>
+            <Col className="gutter-row"
+                                xs={{
+                                  flex: '100%',
+                                }}
+                                sm={{
+                                  flex: '50%',
+                                }}
+                                md={{
+                                  flex: '40%',
+                                }}
+                                lg={{
+                                  flex: '20%',
+                                }}
+                                xl={{
+                                  flex: '10%',
+                                }}>
+            <ProductCard/>
+            </Col>
+            <Col className="gutter-row"
+                                xs={{
+                                  flex: '100%',
+                                }}
+                                sm={{
+                                  flex: '50%',
+                                }}
+                                md={{
+                                  flex: '40%',
+                                }}
+                                lg={{
+                                  flex: '20%',
+                                }}
+                                xl={{
+                                  flex: '10%',
+                                }}>
+            <ProductCard/>
+            </Col>
+            <Col className="gutter-row"
+                                xs={{
+                                  flex: '100%',
+                                }}
+                                sm={{
+                                  flex: '50%',
+                                }}
+                                md={{
+                                  flex: '40%',
+                                }}
+                                lg={{
+                                  flex: '20%',
+                                }}
+                                xl={{
+                                  flex: '10%',
+                                }}>
+            <ProductCard/>
+            </Col>
+            <Col className="gutter-row"
+                                xs={{
+                                  flex: '100%',
+                                }}
+                                sm={{
+                                  flex: '50%',
+                                }}
+                                md={{
+                                  flex: '40%',
+                                }}
+                                lg={{
+                                  flex: '20%',
+                                }}
+                                xl={{
+                                  flex: '10%',
+                                }}>
+            <ProductCard/>
+            </Col>
+            </Row>
           </Content>
         </Layout>
       </Content>

@@ -4,10 +4,12 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import Design from "../components/Design";
+import Navbar from "../components/Navbar";
 function Store () {
   return (
 
     <>
+    <Navbar/>
     <Design/>
     </>
   )
