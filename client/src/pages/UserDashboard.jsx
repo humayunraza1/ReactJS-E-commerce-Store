@@ -1,10 +1,11 @@
 import React from "react"
+import DashDesign from "../components/DashDesign";
 
 function UserDashboard () {
   return (
-    <div>
-      User Dashboard
-    </div>
+    <>
+    <DashDesign/>
+    </>
   )
 };
 

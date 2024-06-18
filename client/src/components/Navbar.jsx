@@ -192,7 +192,7 @@ useEffect(()=>{
                         <item.icon className={`${darkMode ? 'text-white':'text-gray-600'} h-6 w-6 group-hover:text-indigo-600" aria-hidden="true`} />
                       </div> */}
                       <div className="flex-auto">
-                        <a href="/settings" className="block font-semibold">
+                        <a href="/dashboard" className="block font-semibold">
                           Dashboard
                           <span className="absolute inset-0" />
                         </a>
@@ -206,7 +206,7 @@ useEffect(()=>{
                         <item.icon className={`${darkMode ? 'text-white':'text-gray-600'} h-6 w-6 group-hover:text-indigo-600" aria-hidden="true`} />
                       </div> */}
                       <div className="flex-auto">
-                        <a href="/settings" className="block font-semibold">
+                        <a href="/dashboard?tab=order-history" className="block font-semibold">
                           Order History
                           <span className="absolute inset-0" />
                         </a>

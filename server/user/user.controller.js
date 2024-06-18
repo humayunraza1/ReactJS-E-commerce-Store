@@ -25,6 +25,20 @@ function updateCartInAuthToken(token, cartData) {
 
 // 
 
+async function getWishlist(req,res){
+  const {userID} = req.user;
+  const wlist = await wishList.findOne({userID});
+  
+  console.log(wlist);
+  if(!wlist){
+    return res.status(200).send({msg:'Wishlist is empty', items:[]})
+  }
+
+  return res.status(200).send({wishlist:wlist})
+
+}
+
+
 async function addWishlist(req,res){
   const {userID} = req.user;
   const {itemID, SKU} = req.body;
@@ -114,9 +128,12 @@ async function updateProfile(req,res){
     return res.status(200).send("Address successfully updated");
   }
   if(newPassword && confirmPassword && oldPassword){
+    if(newPassword.length<5){
+      return res.status(500).send('Password should at least be 5 characters long.')
+    }
     if(await bcrypt.compare(oldPassword, user.password)){
       if(await bcrypt.compare(newPassword, user.password)){
-        return res.status(200).send("Password cannot be same as the old password.")
+        return res.status(500).send("Password cannot be same as the old password.")
       }else{
         if(newPassword !== confirmPassword){
           return res.status(500).send("New password dont match");
@@ -127,18 +144,27 @@ async function updateProfile(req,res){
         return res.status(200).send("Password successfuly updated")
       }
       
+    }else{
+      return res.status(500).send('Invalid Old Password Entered')
     }
   }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   if(email){
+    if(!emailRegex.test(email)){
+        return res.status(400).send("Invalid email format");
+    }
+    
     const checkUser = await User.findOne({email});
     if(checkUser){
-      return res.status(200).send("Email already in use")
-    }else{
+      return res.status(200).send("Email already in use");
+    } else {
       user.email = email;
       await user.save();
-      return res.status(200).send("Email successfuly updated");
+      return res.status(200).send("Email successfully updated");
     }
-  }
+}
+
   return res.status(500).send("Invalid data passed")
 }
 
@@ -519,4 +545,4 @@ process.on("exit", () => {
   clearInterval(interval);
 });
 
-module.exports = { displayUserDetails,openDispute, addWishlist,addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart,updateProfile };
+module.exports = { displayUserDetails,openDispute,getWishlist, addWishlist,addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart,updateProfile };
