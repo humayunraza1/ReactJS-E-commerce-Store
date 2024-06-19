@@ -15,8 +15,8 @@ const Settings = () => {
   const [open, setOpen] = useState('');
   const [show, setShow] = useState(false);
   const [editAddr,setEditAddr] = useState({address:'',idx:0})
-  const [title, setTitle] = useState('');
-  const [defaultAddrIdx,setDefaultAddrIndex] = useState(user.address.findIndex(addr => addr.isDefault));
+  const addrIndex = user.address.findIndex(addr => addr.isDefault)
+  const [defaultAddrIdx,setDefaultAddrIndex] = useState(addrIndex);
   const [addr, setAddr] = useState({ address: '', isDefault: false });
   const [newEmail, setNewEmail] = useState('');
   const [changePassword, setChangePassword] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
@@ -68,12 +68,11 @@ const Settings = () => {
     );
   }
 
-  const addrIndex = user.address.findIndex(addr => addr.isDefault)
 
   function showAllAddress(){
     return (<>
-      <CustomModal className="p-5" open={show} Title="Address Book" setOpen={setShow}>
-      <RadioGroup value={defaultAddrIdx} defaultValue={addrIndex} onValueChange={(data)=>setDefaultAddrIndex(data)}>
+      <CustomModal className="p-5" open={show} Title="Address Book" handleOk={changeDefAddr} setOpen={setShow}>
+      <RadioGroup value={defaultAddrIdx} onValueChange={(data)=>setDefaultAddrIndex(data)}>
       
   { user.address.map((addr,index)=> <div className="flex items-center space-x-2 rounded-lg border-2 p-4 border-slate-50">
     <RadioGroupItem key={index} value={index} id={`address-${index}`} />
@@ -94,6 +93,33 @@ const Settings = () => {
     </>)
   }
 
+  async function changeDefAddr(){
+    if(defaultAddrIdx == addrIndex){
+      setShow(false);
+      setOpen('');
+      return 0
+    }
+    try{
+      const response = await axios.post('/users/updateuser',{changeDefAddr:defaultAddrIdx},{
+        headers:{
+          'Authorization':auth.token,
+          'Content-Type':'application/json'
+        },
+        withCredentials:true
+        
+      })
+      console.log(response.data);
+      toast.success(response.data+'. Kindly refresh');
+    }catch(err){
+      console.log(err)
+    }finally{
+      setShow(false);
+      setOpen('')
+    }
+
+  }
+
+
   async function onAddAddr() {
     setConfirmLoading(true);
     try {
@@ -105,7 +131,7 @@ const Settings = () => {
         withCredentials: true
       });
       console.log(response.data);
-      toast.success("Address added successfully!");
+      toast.success("Address added successfully!. Kindly refresh");
       setShow(false);
     } catch (err) {
       toast.error(err.response.data);
@@ -145,7 +171,7 @@ const Settings = () => {
         withCredentials: true
       });
       console.log(response.data);
-      toast.success("Email updated successfully!");
+      toast.success("Email updated successfully!. Kindly refresh");
       setShow(false);
     } catch (err) {
       toast.error(err.response.data);
@@ -188,6 +214,7 @@ const Settings = () => {
           <List.Item.Meta title={<a>Email</a>} description={user.email} />
         </List.Item>
         <List.Item actions={[<a key="list-loadmore-edit" onClick={() => { setShow(true); setOpen('addAddr') }}>add</a>, <a key="list-loadmore-more" onClick={()=>{
+          setDefaultAddrIndex(user.address.findIndex(addr => addr.isDefault))
           setShow(true);
           setOpen('addrBook');
         }}>more</a>]}>

@@ -121,7 +121,7 @@ async function updateProfile(req,res){
   if(!user){
     return res.status(500).send("Invalid request passed, kindly relog.")
   }
-  const {address,newPassword,updateAddress,confirmPassword,oldPassword,email} = req.body;
+  const {address,newPassword,changeDefAddr,updateAddress,confirmPassword,oldPassword,email} = req.body;
   
   if(updateAddress){
     user.address = updateAddress
@@ -129,6 +129,18 @@ async function updateProfile(req,res){
     return res.status(200).send("Address successfuly updated.")
   }
   
+
+  if(changeDefAddr){
+    const currDefAddr = user.address.findIndex(addr => addr.isDefault);
+    if(currDefAddr == changeDefAddr){
+      return res.status(200).send("Address already set as default")
+    }
+    user.address[currDefAddr].isDefault = false;
+    user.address[changeDefAddr].isDefault = true;
+    await user.save();
+    return res.status(200).send("Default address successfuly changed.")
+  }
+
   if(address){
     if(user.address.length == 3){
       return res.status(500).send('Cannot add more addresses')
