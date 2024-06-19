@@ -11,11 +11,25 @@ const itemCounter = mongoose.model('Counter', counterSchema);
 const orderCounter = mongoose.model('Counter', counterSchema);
 
 // User schema with userID field
+const addressSchema = new mongoose.Schema({
+    address: { type: String, required: true },
+    isDefault: { type: Boolean, default: false }
+  });
+
 const userSchema = new mongoose.Schema({
     userID: { type: Number, unique: true, immutable: true }, // Immutable prevents user input
     name: { type: String, required: true },
-    address: {type: String, requried:true},
-    number:{type:String, required:true},
+    address: {
+        type: [addressSchema],
+        validate: {
+          validator: function(value) {
+            return value.length <= 3;
+          },
+          message: props => `Address array exceeds the maximum length of 3. Currently length is ${props.value.length}`
+        },
+        default: []
+      },
+    number:{type:String, defualt:null},
     role: {
         type: String,
         enum: ["Admin", "User"],
@@ -23,7 +37,9 @@ const userSchema = new mongoose.Schema({
         immutable: true // Immutable prevents user input
     },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    password: { type: String, required: true },
+    googleId: { type: String, default:null ,sparse: true},
+    password: { type: String },
+    refreshToken: {type:String, default:null},
     resetPasswordToken: { type: String, default: null, immutable: true }, // Immutable prevents user input
     resetPasswordExpires: { type: String, default: null, immutable: true } // Immutable prevents user input
 });
@@ -78,8 +94,15 @@ const orderSchema = new mongoose.Schema({
       enum: ['Pending', 'Accepted', 'Shipped', 'Delivered', 'Cancelled', 'Returned'], 
       default: 'Pending' 
     }, // Order status with specific values
+    disputeStatus: { 
+        type: String, 
+        enum: ['Open','Closed'], 
+        default: null 
+      }, 
     isDisputed: { type: Boolean, default: false }, // Indicates if the order is disputed
     disputeCreatedAt: { type: String,default:null }, // Date of dispute creation
+    disputeReason: {type: String, enum:['Product not as described', 'Not delivered yet','Damaged or defective items','Billing issues','null'], default:'null'},
+    disputeDescription:String,
     paymentMethod: { 
       type: String, 
       enum: ['Debit/Credit Card', 'Mobile Wallets', 'Cash On Delivery'], 
@@ -96,7 +119,10 @@ const orderSchema = new mongoose.Schema({
     // You can add more fields such as shipping information, order status, etc.
   });
   
-
+const wishlistSchema = new mongoose.Schema({
+    userID:{type:String,required:true},
+    items: [Object] 
+})
 
 function formatDate(date) {
     const d = new Date(date);
@@ -167,5 +193,6 @@ const User = mongoose.model('User', userSchema);
 const Item = mongoose.model('Item', itemSchema);
 const Cart = mongoose.model('Cart', cartSchema);
 const Order = mongoose.model('Order', orderSchema);
+const wishList = mongoose.model('Wishlist', wishlistSchema);
 
-module.exports = { User, Item,Cart,Order};
+module.exports = { User, Item,Cart,Order,wishList};

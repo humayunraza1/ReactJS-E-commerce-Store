@@ -5,7 +5,56 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 
-const refreshTokens = [];
+
+
+async function googleLogin(req,res){
+  const {id,email,name} = req.body
+  console.log('Google:' , {id:id, email:email, name:name})
+  let user = await User.findOne({email});
+  console.log(user)
+  if(!user){
+    user = new User({googleId:id,email,name})
+    await user.save();
+    user = await User.findOne({googleId:id})
+ } 
+ if(user && user.googleId !== id) {
+      return res.status(403).send("Account already registered with that email.")
+  } 
+const userInfo = {userID:user.userID, role:user.role}
+const token = generateJWT(userInfo)
+const refreshToken = generateRefreshToken(userInfo)
+user.refreshToken = refreshToken;
+await user.save();
+res.cookie('refreshToken', refreshToken, {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'None', // Required for cross-site cookies
+  maxAge: 1000 * 60 * 60 * 24 * 3 // expires in 3 days
+});
+return res.status(200).send({token:token, user:userInfo, msg:"Logged In Successfuly"})
+}
+
+const handleRefreshToken = async (req, res) => {
+  const cookies = req.cookies;
+    if (!cookies?.refreshToken) {
+      return res.status(401).send("No refresh token cookie found")
+    }
+    console.log(cookies.refreshToken)
+    const refreshToken = cookies.refreshToken;
+    const user = await User.findOne({refreshToken})
+    if(!user) return res.sendStatus(403) // Frobidden
+
+    jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+                    if (err || user.userID !== decoded.userID) {
+                      return res.sendStatus(403);
+                    }
+                    // Update the user object with a new expiration time
+                    decoded.exp = Math.floor(Date.now() / 1000) + 60 * 60 * 1; // 1h
+                    const newToken = jwt.sign(decoded, process.env.JWT_SECRET);
+                    res.json({user:{userID:user.userID,role:user.role}, newToken})
+                  });
+};
+
 
 const registerUser = async (req, res) => {
   try {
@@ -15,7 +64,7 @@ const registerUser = async (req, res) => {
       return res.status(400).send('Email already registered!');
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hashedPassword });
+    const user = new User({ name, email, password: hashedPassword, googleId:"null" });
     await user.save();
     res.status(201).send('User registered successfully!');
   } catch (error) {
@@ -27,33 +76,36 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log(email,password)
     const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).send('Invalid email or password!');
     }
-    const token = generateJWT(user.userID);
-    const refreshToken = generateRefreshToken(user.userID);
-    res.cookie('token', token, {
-      httpOnly: true,
-      maxAge: 3600000 // expires in 1 hour
-    });
+    const userInfo = {userID: user.userID, role: user.role}
+    const token = generateJWT(userInfo);
+    const refreshToken = generateRefreshToken(userInfo);
+    user.refreshToken = refreshToken;
+    await user.save();
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      maxAge: 604800000 // expires in 7 days
+      secure: true,
+      sameSite: 'None', // Required for cross-site cookies
+      maxAge: 1000 * 60 * 60 * 24 * 3 // expires in 3 days
     });
-    return res.status(201).send({message:"Loggedin Successfuly", token:token,refreshToken:refreshToken});
+    return res.status(201).send({message:"Loggedin Successfuly", user:userInfo, token:token});
   } catch (error) {
-    res.status(500).send('Error logging in user!');
+    console.log(error)
+    return res.status(500).send('Error logging in user!');
   }
 };
 
-const generateJWT = (userID) => {
-  console.log("user id: ",userID)
-  return jwt.sign({userID: userID }, process.env.JWT_SECRET, { expiresIn: '1h' });
+const generateJWT = (user) => {
+  console.log("user : ",user)
+  return jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
-const generateRefreshToken = (userID) => {
-  return jwt.sign({userID: userID }, process.env.JWT_SECRET, { expiresIn: '7d' });
+const generateRefreshToken = (user) => {
+  return jwt.sign(user, process.env.JWT_SECRET, { expiresIn: '3d' });
 };
 
 const sendPasswordResetEmail = async (req, res) => {
@@ -152,6 +204,35 @@ const confirmPassword = async (req, res) => {
     res.status(500).send('Error resetting password');
   }
 };
+
+async function handleLogout(req,res){
+  const cookies = req.cookies;
+  if(!cookies?.refreshToken) return res.sendStatus(204);
+
+  const refreshToken = cookies.refreshToken;
+  
+  const user = await User.findOne({refreshToken})
+  if(!user){
+    res.clearCookie('refreshToken',{
+      httpOnly: true,
+      sameSite: 'None', // Required for cross-site cookies
+      secure: false, // Set to true if using HTTPS
+      maxAge: 604800000 // expires in 7 days
+    });
+    return res.sendStatus(204);
+  }
+
+  user.refreshToken = null;
+  await user.save();
+  res.clearCookie('refreshToken',{
+    httpOnly: true,
+    sameSite: 'None', // Required for cross-site cookies
+    secure: true, // Set to true if using HTTPS
+    maxAge: 1000 * 60 * 60 * 24 // expires in 1 day
+  });
+  return res.sendStatus(204);
+}
+
 module.exports = { 
   registerUser, 
   loginUser,
@@ -159,5 +240,8 @@ module.exports = {
   generateRefreshToken,
   sendPasswordResetEmail,
   resetPassword,
-  confirmPassword
+  confirmPassword,
+  handleRefreshToken,
+  handleLogout,
+  googleLogin
 };

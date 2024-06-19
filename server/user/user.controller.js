@@ -1,6 +1,6 @@
-const { skipMiddlewareFunction } = require("mongoose");
-const { User, Item, Cart,Order } = require("../models/user.model");
+const { User, Item, Cart,Order,wishList} = require("../models/user.model");
 const jwt = require("jsonwebtoken");
+const bcrypt = require('bcrypt');
 
 const displayUserDetails = async (req, res) => {
   const { userID } = req.user;
@@ -23,6 +23,169 @@ function updateCartInAuthToken(token, cartData) {
   return updatedToken;
 }
 
+// 
+
+async function getWishlist(req,res){
+  const {userID} = req.user;
+  const wlist = await wishList.findOne({userID});
+  
+  console.log(wlist);
+  if(!wlist){
+    return res.status(200).send({msg:'Wishlist is empty', items:[]})
+  }
+
+  return res.status(200).send({wishlist:wlist})
+
+}
+
+
+async function addWishlist(req,res){
+  const {userID} = req.user;
+  const {itemID, SKU} = req.body;
+  const item = await Item.findOne({itemID});
+  const matchingVariant = item.variants.find(variant => variant.SKU === SKU);
+  let wishlist = await wishList.findOne({userID})
+  let items = []
+  if(!wishlist){
+    wishlist = new wishList({userID, items:[]})
+  }else{
+    items = wishlist.items;
+    let matchingIndex = items.findIndex(item => (item.itemID == itemID) && (item.SKU == SKU));
+    if(matchingIndex > -1){
+      let i = items[matchingIndex];
+      items.splice(matchingIndex,1)
+      wishlist.items = items;
+      if(wishlist.items.length == 0){
+        await wishList.deleteOne({userID});
+        return res.status(200).send(`${i.variant} - ${i.itemName} removed. Wishlist is now empty. `)
+      }
+      await wishlist.save();
+      return res.status(200).send({message:`${i.variant} - ${i.itemName} removed from wishlist`,wl:wishlist.items})
+    }
+  }
+  const itemInfo = {
+    itemID: item.itemID,
+    itemName: item.itemName,
+    thumbnail:matchingVariant.thumbnail,
+    SKU: SKU,
+    variant:  matchingVariant.Variant,
+    price:  matchingVariant.price,
+    isOOS:  matchingVariant.isOOS 
+  }
+  items.push(itemInfo);
+  wishlist.items = items;
+  await wishlist.save()
+  return res.status(200).send({message:`${itemInfo.variant} - ${itemInfo.itemName} added to wishlist`, wl:wishlist.items})
+} 
+
+
+async function openDispute(req,res){
+  const {userID} = req.user;
+  const {orderID,reason, description} = req.body;
+
+  const order = await Order.findOne({orderID});
+  if(!order){
+    return res.status(500).send("Invalid Order ID");
+  }
+
+  if (order.userID !== userID){
+    return res.status(500).send("You cannot open dispute for this order");
+  }
+  
+  if(order.isDisputed){
+    return res.status(500).send("Order already disputed, kindly wait.")
+  }
+
+  if(!description || description.length < 5){
+    return res.status(500).send("description too short. Please write minimum 5 words")
+  }
+
+  const currentDate = new Date();
+
+  order.isDisputed = true;
+  order.disputeStatus = 'Open'
+  order.disputeCreatedAt = formatDate(currentDate);
+  order.disputeReason = reason;
+  order.disputeDescription = description;
+
+  await order.save();
+
+  return res.status(200).send(`Dispute created for order id: ${orderID}`)
+}
+
+// Update Profile Settings
+
+async function updateProfile(req,res){
+  const {userID} = req.user;
+  const user = await User.findOne({userID});
+  if(!user){
+    return res.status(500).send("Invalid request passed, kindly relog.")
+  }
+  const {address,newPassword,updateAddress,confirmPassword,oldPassword,email} = req.body;
+  
+  if(updateAddress){
+    user.address = updateAddress
+    await user.save()
+    return res.status(200).send("Address successfuly updated.")
+  }
+  
+  if(address){
+    if(user.address.length == 3){
+      return res.status(500).send('Cannot add more addresses')
+    }
+    user.address.push(address);
+    if (address.isDefault) {
+      user.address.forEach((addr, index) => {
+        if (addr.isDefault && addr.address !== address.address) {
+          user.address[index].isDefault = false;
+        }
+      });
+    }
+    await user.save();
+    return res.status(200).send("Address successfully updated");
+  }
+  if(newPassword && confirmPassword && oldPassword){
+    if(newPassword.length<5){
+      return res.status(500).send('Password should at least be 5 characters long.')
+    }
+    if(await bcrypt.compare(oldPassword, user.password)){
+      if(await bcrypt.compare(newPassword, user.password)){
+        return res.status(500).send("Password cannot be same as the old password.")
+      }else{
+        if(newPassword !== confirmPassword){
+          return res.status(500).send("New password dont match");
+        }
+        const hashedPassword = await bcrypt.hash(newPassword, 10)
+        user.password = hashedPassword;
+        await user.save()
+        return res.status(200).send("Password successfuly updated")
+      }
+      
+    }else{
+      return res.status(500).send('Invalid Old Password Entered')
+    }
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if(email){
+    if(!emailRegex.test(email)){
+        return res.status(400).send("Invalid email format");
+    }
+    
+    const checkUser = await User.findOne({email});
+    if(checkUser){
+      return res.status(200).send("Email already in use");
+    } else {
+      user.email = email;
+      await user.save();
+      return res.status(200).send("Email successfully updated");
+    }
+}
+
+  return res.status(500).send("Invalid data passed")
+}
+
+// 
 
 async function getCart(req,res){
   const {userID} = req.user;
@@ -399,4 +562,4 @@ process.on("exit", () => {
   clearInterval(interval);
 });
 
-module.exports = { displayUserDetails, addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart };
+module.exports = { displayUserDetails,openDispute,getWishlist, addWishlist,addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart,updateProfile };
