@@ -11,10 +11,24 @@ const itemCounter = mongoose.model('Counter', counterSchema);
 const orderCounter = mongoose.model('Counter', counterSchema);
 
 // User schema with userID field
+const addressSchema = new mongoose.Schema({
+    address: { type: String, required: true },
+    isDefault: { type: Boolean, default: false }
+  });
+
 const userSchema = new mongoose.Schema({
     userID: { type: Number, unique: true, immutable: true }, // Immutable prevents user input
     name: { type: String, required: true },
-    address: {type: String, default:null},
+    address: {
+        type: [addressSchema],
+        validate: {
+          validator: function(value) {
+            return value.length <= 3;
+          },
+          message: props => `Address array exceeds the maximum length of 3. Currently length is ${props.value.length}`
+        },
+        default: []
+      },
     number:{type:String, defualt:null},
     role: {
         type: String,

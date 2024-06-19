@@ -24,6 +24,7 @@ function DashHome () {
 
      const {user} = response.data
       setUser({name:user.name, email:user.email, googleId:user.googleId, userId: user.userID, address:user.address})
+      console.log(user.address)
     }catch(err){
       console.log(err)
     }finally{
@@ -35,6 +36,8 @@ function DashHome () {
     getDetails()
   
   },[])
+
+
 
   return (
     <>

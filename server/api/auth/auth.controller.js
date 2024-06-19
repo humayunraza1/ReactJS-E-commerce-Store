@@ -94,6 +94,7 @@ const loginUser = async (req, res) => {
     });
     return res.status(201).send({message:"Loggedin Successfuly", user:userInfo, token:token});
   } catch (error) {
+    console.log(error)
     return res.status(500).send('Error logging in user!');
   }
 };

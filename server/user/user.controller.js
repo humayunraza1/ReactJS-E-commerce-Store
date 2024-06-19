@@ -121,9 +121,26 @@ async function updateProfile(req,res){
   if(!user){
     return res.status(500).send("Invalid request passed, kindly relog.")
   }
-  const {address,newPassword,confirmPassword,oldPassword,email} = req.body;
+  const {address,newPassword,updateAddress,confirmPassword,oldPassword,email} = req.body;
+  
+  if(updateAddress){
+    user.address = updateAddress
+    await user.save()
+    return res.status(200).send("Address successfuly updated.")
+  }
+  
   if(address){
-    user.address = address;
+    if(user.address.length == 3){
+      return res.status(500).send('Cannot add more addresses')
+    }
+    user.address.push(address);
+    if (address.isDefault) {
+      user.address.forEach((addr, index) => {
+        if (addr.isDefault && addr.address !== address.address) {
+          user.address[index].isDefault = false;
+        }
+      });
+    }
     await user.save();
     return res.status(200).send("Address successfully updated");
   }
