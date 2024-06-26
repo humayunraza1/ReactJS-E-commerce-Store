@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { Label } from '@radix-ui/react-dropdown-menu';
 import { Checkbox } from './ui/checkbox';
 import {EditOutlined } from '@ant-design/icons';
-const Settings = () => {
+const Settings = ({className}) => {
   const {user} = useGeneral();
   const [open, setOpen] = useState('');
   const [show, setShow] = useState(false);
@@ -203,7 +203,7 @@ const Settings = () => {
   const defaultAddress = user.address.find(addr => addr.isDefault);
   
   return (
-    <>
+    <div className={className}>
       {open == 'cemail' && changeEmail()}
       {open == 'cpassword' && cPassword()}
       {open == 'addAddr' && addAddress()}
@@ -227,7 +227,7 @@ const Settings = () => {
           <List.Item.Meta title={<a>Password</a>} description="Click edit to change password" />
         </List.Item>
       </List>
-    </>
+    </div>
   );
 };
 

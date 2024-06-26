@@ -2,7 +2,7 @@ import axios from "../api/axios"
 import useAuth from "./useAuth";
 import useGeneral from "./useGeneral";
 function useRefreshToken () {
-    const {auth,setAuth} = useAuth();
+    const {setAuth} = useAuth();
     const {setIsLoggedIn} = useGeneral();
     async function refresh(req,res){
     let response;

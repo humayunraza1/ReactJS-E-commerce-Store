@@ -166,15 +166,17 @@ export function DataTableDemo() {
   const [columnVisibility, setColumnVisibility] = React.useState({})
   const [rowSelection, setRowSelection] = React.useState({})
     const {auth} = useAuth();
-    const {darkMode,isLoading,setIsLoading,setWishlist} = useGeneral();
+    const {darkMode,isLoading,setIsLoading,wishlist,setWishlist} = useGeneral();
   React.useEffect(()=>{
     setIsLoading(true);
-    getwishlist()
+    if(wishlist.length==0){
+      getwishlist()
+    }
     setIsLoading(false)
-  },[])
+  },[wishlist])
 
   async function getwishlist(){
-    const response = await axiosPrivate.get('http://localhost:3000/users/getwishlist',{
+    const response = await axiosPrivate.get('/users/getwishlist',{
         headers:{
             'Authorization':auth.token,
             'Content-Type':'application/json'

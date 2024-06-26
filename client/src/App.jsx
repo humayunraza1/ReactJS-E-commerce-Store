@@ -27,6 +27,7 @@ function App () {
         {/* Protected Routes */}
         <Route element={<PersistLogin />}>
         <Route path="/" element={<Store />} />
+        <Route path="/products/:productName" element={<Store />} />
         <Route element={<RequireAuth allowedRole={"Admin"}/>}> 
         <Route path="admin" element={ <AdminDashboard />} />
         </Route>

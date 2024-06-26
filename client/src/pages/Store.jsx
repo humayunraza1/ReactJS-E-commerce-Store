@@ -6,6 +6,7 @@ import useAxiosPrivate from "../hooks/useAxiosPrivate";
 import Design from "../components/Design";
 import Navbar from "../components/Navbar";
 function Store () {
+
   return (
 
     <>

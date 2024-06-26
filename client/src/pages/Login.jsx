@@ -1,5 +1,4 @@
 import React, { useState } from "react"
-import axios from 'axios';
 import { useNavigate, useLocation } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import useGeneral from "../hooks/useGeneral";
@@ -20,6 +19,7 @@ import {
 import Autoplay from "embla-carousel-autoplay"
 import { GoogleLogin, useGoogleLogin } from '@react-oauth/google';
 import DarkSwitch from "../components/DarkSwitch";
+import axios from "../api/axios";
 
 export function Example() {
   return (
@@ -82,7 +82,7 @@ function Login () {
         setIsLoading(true)
         try{
             let name = user.given_name + ' ' +user.family_name; 
-            const response = await axios.post('http://localhost:3000/api/auth/google', { email:user.email, id:user.id,name:name}, 
+            const response = await axios.post('/api/auth/google', { email:user.email, id:user.id,name:name}, 
                 {   
                     headers:{'Content-Type':'application/json'},
                     withCredentials: true 
@@ -104,7 +104,7 @@ function Login () {
     async function login(){
     setIsLoading(true)
         try{
-            const response = await axios.post('http://localhost:3000/api/auth/login', { email:logindetails.email, password:logindetails.password }, 
+            const response = await axios.post('/api/auth/login', { email:logindetails.email, password:logindetails.password }, 
             {   
                 headers:{'Content-Type':'application/json'},
                 withCredentials: true 

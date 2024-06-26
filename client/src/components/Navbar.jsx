@@ -53,13 +53,33 @@ export default function Navbar() {
   const logout = useLogout();
   const axiosPrivate = useAxiosPrivate();
   
-    const {darkMode,isLoggedIn} = useGeneral();
+    const {darkMode,isLoggedIn,wishlist,setWishlist} = useGeneral();
     const {auth,setAuth} = useAuth(); 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [details, setDetails] = useState({Name:"",Email:"" ,Role:""})
+  async function getwishlist(){
+    try{
+
+      const response = await axiosPrivate.get('/users/getwishlist',{
+        headers:{
+          'Authorization':auth.token,
+          'Content-Type':'application/json'
+        }
+      })
+      console.log(response.data);
+      if(response.data.items == []){
+       return setWishlist([])
+      }
+      console.log(response.data)
+      setWishlist(response.data.wishlist.items)
+    }catch(err){
+      console.log(err);
+    }
+    }
+
 async function getDetails(){
   try{
-    const response = await axiosPrivate.get('http://localhost:3000/users/dashboard',{
+    const response = await axiosPrivate.get('/users/dashboard',{
       headers:{'Content-Type': 'application/json',
       'Authorization' : auth.token
     },
@@ -81,6 +101,7 @@ async function signout(){
 useEffect(()=>{
   if(auth.token !== ""){
   getDetails()
+  getwishlist()
   }
 },[auth])
 

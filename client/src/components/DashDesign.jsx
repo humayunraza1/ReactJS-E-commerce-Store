@@ -14,6 +14,7 @@ import Disputes from './Disputes';
 import DarkSwitch from './DarkSwitch';
 import useGeneral from '../hooks/useGeneral';
 import DashHome from './DashHome';
+import MobileTabs from './MobileTabs';
 const { Header, Content, Footer, Sider } = Layout;
 function getItem(label, key, icon, children) {
   return {
@@ -40,7 +41,6 @@ const DashDesign = () => {
   const [current, setCurrent] = useState('0');
   const {darkMode} = useGeneral();
   const navigate = useNavigate();
-  let c = '0'
   const [searchParams, setSearchParams] = useSearchParams();
   const userTabValues = ['settings','order-history','disputes'] 
 
@@ -92,10 +92,19 @@ const DashDesign = () => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   return (
+    <>
+    <div className="md:hidden">
+    <div className={`w-full ${darkMode ? 'text-white':'text-black' } text-center font-Bebas mt-6 mb-6`}>
+          <h1 className='text-3xl'>Azzy's Hardware</h1>
+          <p className='text-lg'>Dashboard</p>
+        </div>
+    <MobileTabs current={current} setCurrent={setCurrent} searchParams={searchParams} setSearchParams={setSearchParams}/>
+    </div>
     <Layout
-      style={{
-        minHeight: '100vh',
-      }}
+    className='hidden md:flex'
+    style={{
+      minHeight: '100vh',
+    }}
     >
       <Sider theme={darkMode ? 'dark':'light'} collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
        { !collapsed && <div className={`w-full ${darkMode ? 'text-white':'text-black' } text-center font-Bebas mt-6 mb-6`}>
@@ -113,12 +122,12 @@ const DashDesign = () => {
             padding: 0,
             background: darkMode ? 'black':colorBgContainer,
           }}
-        />
+          />
         <Content
           style={{
             margin: '16px 16px',
           }}
-        >
+          >
           <div
             style={{
               padding: 24,
@@ -126,7 +135,7 @@ const DashDesign = () => {
               background: darkMode ? '#001529':'white',
               borderRadius: borderRadiusLG,
             }}
-          >
+            >
            {current == '0' && <DashHome/>}
            {current == '1' && <Settings/>}
            {current == '2' && <OrderHistory/>}
@@ -142,11 +151,12 @@ const DashDesign = () => {
             background: darkMode ? 'black':'white',
             color: darkMode ? 'white':'black'
           }}
-        >
+          >
           Ant Design ©{new Date().getFullYear()} Created by Ant UED
         </Footer>
       </Layout>
     </Layout>
+    </>
   );
 };
 export default DashDesign;

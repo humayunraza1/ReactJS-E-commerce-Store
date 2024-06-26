@@ -31,7 +31,7 @@ async function getWishlist(req,res){
   
   console.log(wlist);
   if(!wlist){
-    return res.status(200).send({msg:'Wishlist is empty', items:[]})
+    return res.status(200).send({msg:'Wishlist is empty', wishlist:{items:[]}})
   }
 
   return res.status(200).send({wishlist:wlist})
@@ -195,6 +195,15 @@ async function updateProfile(req,res){
 }
 
   return res.status(500).send("Invalid data passed")
+}
+
+
+async function getProducts(req,res){
+  const {category, productName} = req.body;
+  if(!category && !productName){
+    const items = await Item.find();
+    return res.status(200).send({msg:'Products fetched',products:items})
+  }
 }
 
 // 
@@ -574,4 +583,4 @@ process.on("exit", () => {
   clearInterval(interval);
 });
 
-module.exports = { displayUserDetails,openDispute,getWishlist, addWishlist,addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart,updateProfile };
+module.exports = { displayUserDetails,openDispute,getWishlist,getProducts, addWishlist,addItemToCart, placeOrder,getOrderHistory,cancelOrder,deleteItemFromCartBySKU,getCart,updateProfile };
