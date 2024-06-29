@@ -217,8 +217,6 @@ async function getCart(req,res){
   if(!cart ){
     return res.status(200).send({message:"cart is empty", cart:[]});
   }else{
-    const updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
-    res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 86400000 });
     return res.status(200).send({message:"Cart retrieved.", cart:cart.items});
   }
 }
@@ -227,7 +225,6 @@ async function getCart(req,res){
 async function addItemToCart(req, res) {
   try {
     const { userID } = req.user;
-    const authToken = req.cookies.authToken;
     const { itemID, quantity, sku } = req.body;
 
     if (!itemID || !quantity || !sku) {
@@ -235,18 +232,10 @@ async function addItemToCart(req, res) {
     }
 
     let cart = await Cart.findOne({ userID });
-    if (!authToken) {
       if (!cart) { 
         cart = new Cart({userID, items:[]})
-      } else {
-        const updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
-        res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 86400000 });
       }
-    } else {
-      // Cart exists in the database, populate cartData from the cart
-      decoded = jwt.decode(authToken);
-      cartData = decoded.cart;
-    }
+
     let item = await Item.findOne({ itemID });
     if (!item || !item.variants || !Array.isArray(item.variants)) {
       return res.status(500).send("Invalid item or variants");
@@ -270,9 +259,9 @@ async function addItemToCart(req, res) {
       if ((cart.items[existingItemIndex].qty + quantity) <= matchingVariant.stock) {
         cart.items[existingItemIndex].qty += quantity;
         if (quantity < 0) {
-          message = `${quantity} reduced`;
+          message = `${quantity*-1}x ${matchingVariant.Variant} - ${item.itemName} removed`;
         } else {
-          message = `${quantity} added`;
+          message = `${quantity}x ${matchingVariant.Variant} - ${item.itemName} added`;
         }
         if (cart.items[existingItemIndex].qty <= 0) {
           message = `${matchingVariant.Variant} ${item.itemName} removed from cart`;
@@ -290,6 +279,7 @@ async function addItemToCart(req, res) {
         message = `${quantity}x ${matchingVariant.Variant} ${item.itemName} added `;
         cart.items.push({
           itemID,
+          name:item.itemName,
           qty: quantity,
           cost: matchingVariant.price,
           variant: matchingVariant.Variant,
@@ -302,9 +292,6 @@ async function addItemToCart(req, res) {
     }
 
     await cart.save();
-
-    const updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
-    res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 86400000 }); // 1 hour expiry
 
     return res.status(201).send({ message: message, item: cart.items });
   } catch (error) {
@@ -508,37 +495,23 @@ async function deleteItemFromCartBySKU(req, res) {
   try {
     const { userID } = req.user;
     const { SKU } = req.body;
-    let authToken = req.cookies.authToken;
-    let cart;
+    const cart = await Cart.findOne({ userID });
     
-    if (!authToken) {
-      cart = await Cart.findOne({ userID });
       if (!cart) {
         return res.status(500).send('Cart not found, please re-log.');
-      } else {
-        const updatedToken = updateCartInAuthToken(req.headers.authorization, cart.items);
-        res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 86400000 });
       }
-    }
     
-    authToken = req.cookies.authToken;
-    const decode = jwt.decode(authToken);
-    let decodedCart = decode.cart;
-    const updatedItems = decodedCart.filter(item => item.SKU !== SKU);
-    const updatedToken = updateCartInAuthToken(req.headers.authorization, updatedItems);
-    res.cookie("authToken", updatedToken, { httpOnly: true, maxAge: 86400000 });
-    
+    const updatedItems = cart.items.filter(item => item.SKU !== SKU);
     console.log('Item left in cart:', updatedItems);
     if(updatedItems.length == 0){
       await Cart.deleteOne({userID});
-      res.clearCookie('authToken');
-      return res.status(200).send("Cart is now empty");
+      return res.status(200).send({message:"Cart is now empty",items:[]});
     }else{
       await Cart.findOneAndUpdate({userID:userID},{items:updatedItems,expiresAfter:Date.now()},{new:true}); // Await the update operation
     }
     
     // Correct the send statement
-    return res.status(200).send(updatedItems); // Remove the "Item deleted" string from the status
+    return res.status(200).send({items:updatedItems}); // Remove the "Item deleted" string from the status
   } catch (error) {
     console.error('Error deleting item from cart:', error);
     return res.status(500).send("Unknown error occurred.");

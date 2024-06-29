@@ -30,6 +30,7 @@ import useLogout from '../hooks/useLogout'
 import useAxiosPrivate from '../hooks/useAxiosPrivate'
 import AvatarComp from './Avatar'
 import CustomPopOver from './CustomPopOver'
+import Cart from './Cart'
 
 const products = [
   { name: 'Analytics', description: 'Get a better understanding of your traffic', href: '#', icon: ChartPieIcon },
@@ -53,7 +54,7 @@ export default function Navbar() {
   const logout = useLogout();
   const axiosPrivate = useAxiosPrivate();
   
-    const {darkMode,isLoggedIn,wishlist,setWishlist} = useGeneral();
+    const {darkMode,isLoggedIn,wishlist,setWishlist,setCart,cart} = useGeneral();
     const {auth,setAuth} = useAuth(); 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [details, setDetails] = useState({Name:"",Email:"" ,Role:""})
@@ -76,6 +77,20 @@ export default function Navbar() {
       console.log(err);
     }
     }
+
+async function getCart(){
+  try{
+    const response = await axiosPrivate.get('/users/getcart',{
+      headers:{
+        'Authorization':auth.token,
+        'Content-Type': 'application/json'
+      }
+    })
+    setCart(response.data.cart)
+  }catch(err){
+    console.log(err)
+  }
+}
 
 async function getDetails(){
   try{
@@ -102,6 +117,7 @@ useEffect(()=>{
   if(auth.token !== ""){
   getDetails()
   getwishlist()
+  getCart()
   }
 },[auth])
 
@@ -187,6 +203,7 @@ useEffect(()=>{
             Company
           </a>
         </PopoverGroup>
+        <Cart/>
 <div className={`hidden lg:flex lg:flex-1 lg:justify-end ${darkMode ? 'text-white':'text-black'}`}>
 { isLoggedIn  ?     <div><PopoverGroup className={`${darkMode ? 'text-white':'text-black'} hidden lg:flex lg:gap-x-12`}>
       <Popover className="relative" >
@@ -260,6 +277,7 @@ useEffect(()=>{
           </a>
           }
         </div>
+        
       </nav>
       <Dialog className="lg:hidden" open={mobileMenuOpen} onClose={setMobileMenuOpen}>
         <div className="fixed inset-0 z-10" />

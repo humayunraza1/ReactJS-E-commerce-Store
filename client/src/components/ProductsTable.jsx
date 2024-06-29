@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react"
-import { Divider, Layout, Menu, theme } from 'antd';
+import { Divider, Pagination,Layout, Menu, theme, ConfigProvider } from 'antd';
 import ProductCard from './ProductCard';
 import Grid from '@mui/material/Unstable_Grid2'
 import { axiosPrivate } from "../api/axios";
+import useGeneral from "../hooks/useGeneral";
 const { Header, Content, Footer, Sider } = Layout;
+
 
 const items = [
     {
@@ -53,14 +55,41 @@ const items = [
 function ProductsTable ({children}) {
 
 const [Products,setProducts] = useState([])
+const rowsPerPage = 4;
+const [startIndex,setStartIndex] = useState(0)
+const [endIndex,setEndIndex] = useState(rowsPerPage)
+const {darkMode} = useGeneral();
+
+const onChange = (pageNumber) => {
+  setStartIndex((pageNumber-1)*rowsPerPage)
+  setEndIndex(rowsPerPage*pageNumber)
+};
+
   async function getProducts(){
     const response = await axiosPrivate.get('/users/products',{
       headers:{
         'Content-Type':'application/json'
       }
     });
-    setProducts(response.data.products);
-    console.log(response.data);
+    const data = response.data.products;
+    setProducts(data.flatMap((prod, index) => 
+      prod.variants.map((item, i) => 
+       {return (<Grid item key={`${index}-${i}`} padding={0} color={'white'} xs={12} sm={4} md={4} lg={2}>
+          <div className="flex justify-center">
+            <ProductCard 
+              itemName={prod.itemName} 
+              itemID={prod.itemID} 
+              price={item.price} 
+              thumbnail={item.thumbnail} 
+              SKU={item.SKU} 
+              variant={item.Variant} 
+              description={prod.itemDescription}
+            />
+          </div>
+        </Grid>)
+      })
+    ));
+    
   }
 
   useEffect(()=>{
@@ -72,18 +101,17 @@ const [Products,setProducts] = useState([])
       } = theme.useToken();
   return (
     <>
+    {children}
 <Layout>
       <Content
         style={{
-          height: '100dvh'
+          height: '100dvh',
         }}
         >
         <Layout
           style={{
-            padding: '24px 0',
             height: '100dvh',
-            background: colorBgContainer,
-            borderRadius: borderRadiusLG,
+            background: darkMode ? "black":colorBgContainer
           }}
           >
           <Sider
@@ -101,6 +129,7 @@ const [Products,setProducts] = useState([])
               style={{
                 height: '100%',
               }}
+              theme= {darkMode ? "dark":"light"}
               items={items}
               />
           </Sider>
@@ -112,24 +141,29 @@ const [Products,setProducts] = useState([])
             >
               {/* Products go here */}
 
-              <Grid  container rowGap={1} >
-                {Products.map((prod,index)=> prod.variants.map((item,i)=>
-                  <Grid item key={index+i} padding={0} color={'white'} xs={12} sm={4} md={4} lg={2}>
-                    <div className="flex justify-center">
-            <ProductCard itemName={prod.itemName} itemID={prod.itemID} price={item.price} thumbnail={item.thumbnail} SKU={item.SKU} variant={item.Variant} description={prod.itemDescription}/>
-                    </div>
+            
+              <Grid  container rowGap={1} gap={{lg:5}}>
+                {Products.slice(startIndex,endIndex).map((item,i)=>item)}
               </Grid>
-              )
-                )}
-                
-              </Grid>
-
+              <div className="flex w-full justify-center p-8">
+                <ConfigProvider theme={{
+                  token:{
+                    colorText: darkMode ? "white":"rgba(0, 0, 0, 0.88)",
+                    colorTextDisabled: darkMode ? "#adadad":"rgba(0, 0, 0, 0.25)",
+                    colorBgContainer: darkMode ? "#001529" : "#ffffff"
+                  }
+                }}>
+                <Pagination  showQuickJumper defaultCurrent={1} pageSize={rowsPerPage} total={Products.length} onChange={onChange} />
+                </ConfigProvider>
+              </div>
           </Content>
         </Layout>
       </Content>
       <Footer
         style={{
           textAlign: 'center',
+          color: darkMode?"white":"black",
+          backgroundColor:darkMode? "#0a1018":colorBgContainer
         }}
         >
         Ant Design ©{new Date().getFullYear()} Created by Ant UED

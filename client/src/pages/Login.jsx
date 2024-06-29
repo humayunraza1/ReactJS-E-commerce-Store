@@ -129,17 +129,17 @@ function Login () {
     
     return (
         <>
-        <div className={`flex justify-center items-center w-screen h-screen ${darkMode ? 'bg-black':'bg-white'}`}>
-            <div className="card shadow-2xl w-[800px] h-96 rounded-2xl border-black flex">
+        <div className={`flex justify-center items-center w-screen h-screen ${darkMode ? 'bg-[#0a1018]':'bg-white'}`}>
+            <div className={`${darkMode && "bg-black"} card shadow-2xl w-[800px] h-96 rounded-2xl border-black flex`}>
                 <div className="w-[50%] p-8 rounded-l-2xl flex justify-center">
-                <div className="w-[250px]">
+                <div className={`w-[250px]`}>
 
                     <div>
-      <Label className="mt-5" htmlFor="email" >Email</Label>
+      <Label className={`mt-5 ${darkMode ? "text-white":"text-black"}`} htmlFor="email" >Email</Label>
       <Input disabled={isLoading} onChange={handleInputChange} type="email" name="email" id="email" placeholder="Email" className="w-[250px]"/>
                     </div>
         <div className="mt-2">
-      <Label className="mt-5" htmlFor="password">Password</Label>
+      <Label className={`mt-5 ${darkMode ? "text-white":"text-black"}`} htmlFor="password">Password</Label>
       <Input disabled={isLoading} onChange={handleInputChange} type="password" name="password" id="password" placeholder="Password"  className="w-[250px]"/>
         </div>
         <Button disabled={isLoading} onClick={login} className="mt-3">
@@ -188,7 +188,7 @@ function Login () {
       <CarouselNext />
     </Carousel>
     </div>
-                <div className="bg-slate-900 p-5 text-center text-white rounded-t-2xl rounded-r-2xl h-[23%] shadow-[rgba(0,0,15,0.1)_0px_-5px_4px_0px] w-full">
+                <div className="bg-slate-900 p-5 text-center text-white rounded-t-2xl rounded-r-xl h-[23%] shadow-[rgba(0,0,15,0.1)_0px_-5px_4px_0px] w-full">
                                            Haven't signed up?
                         
                     <Button className="text-red ml-5" variant='ghost' onClick={()=>navigate('/register')}>Register</Button>

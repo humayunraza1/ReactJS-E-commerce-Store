@@ -72,6 +72,7 @@ const cartSchema = new mongoose.Schema({
   userID: { type: Number, immutable: true },
   items: [{
       itemID: { type: Number, immutable: true },
+      name:String,
       cost: Number,
       qty: Number,
       variant: {type: String, default: "none"},
