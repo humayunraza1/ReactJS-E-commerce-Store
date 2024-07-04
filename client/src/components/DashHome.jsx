@@ -8,37 +8,8 @@ import { useNavigate } from "react-router-dom";
 
 function DashHome ({className}) {
 
-  const {auth} = useAuth();
-  const {darkMode,isLoading,setIsLoading,wishlist,user,setUser} = useGeneral();
+  const {darkMode,isLoading,user,setUser} = useGeneral();
   const navigate = useNavigate();
-  async function getDetails(){
-    setIsLoading(true);
-    try{
-      const response = await axiosPrivate.get('/users/dashboard',{
-        headers:{
-          'Authorization':auth.token,
-          'Content-Type': 'application/json'
-        }
-
-      })
-
-     const {user} = response.data
-      setUser({name:user.name, email:user.email, googleId:user.googleId, userId: user.userID, address:user.address})
-      console.log(user.address)
-    }catch(err){
-      console.log(err)
-    }finally{
-      setIsLoading(false);
-    }
-  }
-  useEffect(()=>{
-   if(user.name==''){
-     getDetails()
-   }
-  
-  },[])
-
-
 
   return (
     <div className={className}>

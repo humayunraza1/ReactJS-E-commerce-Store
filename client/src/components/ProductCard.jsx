@@ -49,8 +49,8 @@ async function addtoCart(){
       withCredentials:true
     })
     toast(response.data.message);
-    setCart(response.data.item)
-    console.log(response.data);
+    setCart(response.data.cart)
+    console.log(response.data.cart);
   }catch(err){
     console.log(err)
   }

@@ -54,7 +54,7 @@ export default function Navbar() {
   const logout = useLogout();
   const axiosPrivate = useAxiosPrivate();
   
-    const {darkMode,isLoggedIn,wishlist,setWishlist,setCart,cart} = useGeneral();
+    const {darkMode,isLoggedIn,wishlist,setWishlist,setUser,setCart,cart} = useGeneral();
     const {auth,setAuth} = useAuth(); 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [details, setDetails] = useState({Name:"",Email:"" ,Role:""})
@@ -87,10 +87,14 @@ async function getCart(){
       }
     })
     setCart(response.data.cart)
+    console.log(response.data.cart);
   }catch(err){
     console.log(err)
   }
 }
+
+
+
 
 async function getDetails(){
   try{
@@ -101,8 +105,10 @@ async function getDetails(){
     withCredentials:true      
   })
   
-  const data = response.data
-  setDetails({Name: data.user.name, Email: data.user.email, Role: data.user.role})
+  const {user} = response.data
+  setDetails({Name: user.name, Email: user.email, Role: user.role})
+  setUser({name:user.name, email:user.email, googleId:user.googleId,number:user.number, userId: user.userID, address:user.address})
+
   // console.log(data);
 }catch(err){
   console.log(err)

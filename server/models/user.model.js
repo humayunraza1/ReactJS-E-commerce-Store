@@ -79,6 +79,11 @@ const cartSchema = new mongoose.Schema({
       SKU: {type:String, required:true},
       thumbnail: {type:String}
   }],
+  final:{
+    total:Number,
+    dc:Number,
+    discount:Number
+  },
   expiresAfter: { type: Date, default: Date.now} // Expires after 1 hour
 });
 
