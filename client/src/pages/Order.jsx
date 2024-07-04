@@ -2,42 +2,81 @@ import React, { useState } from "react";
 import useGeneral from "../hooks/useGeneral";
 import useAuth from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { ExclamationCircleOutlined,CheckCircleTwoTone,ExclamationCircleTwoTone } from '@ant-design/icons';
 import CartProducts from "../components/CarProducts";
-import { Button, Divider, Input, Space, Tooltip } from "antd";
+import { Button, Divider, Input, Modal, Space, Tooltip } from "antd";
 import { CheckOutlined } from "@ant-design/icons";
-import CustomModal from "../components/CustomModal";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 import { Label } from "@radix-ui/react-label";
 import { axiosPrivate } from "../api/axios";
 
 function Order() {
   const { auth } = useAuth();
-  const { darkMode, user, cart } = useGeneral();
+  const { darkMode, user, cart,setCart } = useGeneral();
   const [loading, isLoading] = useState(false);
   const [paymentOpt, setPaymentOpt] = useState("cod");
   const [discountCode, setDiscountCode] = useState("");
   const defaultAddr = user.address.find((addr) => addr.isDefault);
   const [defAddr, setDefAddr] = useState(defaultAddr.address);
   const navigate = useNavigate();
-
+  const [modal,contextHolder] = Modal.useModal();
   async function placeOrder(){
+    let m = Modal.info();
     try{
-        const response = await axiosPrivate.post('/users/placeorder',{Name:user.name,Email:user.email,Number:user.number, Address:defAddr},{headers:{
+        const response = await axiosPrivate.post('/users/placeorder',{Name:user.name,Email:user.email,Number:user.number, Address:defAddr,paymentOpt:paymentOpt},{headers:{
             'Authorization':auth.token,
             'Content-Type':'application/json'
         },
         withCredentials:true
     })
         console.log(response.data);
+        m.update({
+          title:`Order Placed Successfuly`,
+          content:`Your Order id is ${response.data.order.orderID}`,
+          icon:<CheckCircleTwoTone twoToneColor="#52c41a"/>,
+          okText:'Ok',
+          maskClosable:false,
+          closable:false,
+          onOk: ()=>{m.destroy(); navigate('/');}
+                })
     }catch(err){
+      m.update({
+        title:'Uh Oh!',
+        content: err.response.data.message,
+        okText:'Ok',
+        icon:<ExclamationCircleTwoTone  twoToneColor="#ed0000"/>,
+        maskClosable:true,
+        closable:true,
+        keyboard:true,
+        onOk: m.destroy()
+      })
+      if(err.response.data.cart.length ==0){
+        navigate('/')
+      }
+      setCart(err.response.data.cart)
         console.log(err.response.data);
     }
   }
+
+
+  const confirm = () => {
+    modal.confirm({
+      title: 'Confirm Order',
+      icon: <ExclamationCircleOutlined/>,
+      content: 'Are you sure you want to place order?',
+      okText: 'Yes',
+      cancelText: 'Cancel',
+      maskClosable:true,
+      onOk:placeOrder
+    });
+  };
 
   if (cart.items?.length == 0) {
     navigate("/");
   }
   return (
+    <>
+    {contextHolder}
     <div className="p-8 flex justify-center">
       <div className="flex flex-col md:flex-row justify-center rounded-lg gap-8 w-full h-auto">
         <div className="flex flex-col p-4 w-auto md:w-[800px] bg-blue-300 rounded-lg">
@@ -64,7 +103,7 @@ function Order() {
             <RadioGroup
               value={paymentOpt}
               onValueChange={(data) => setPaymentOpt(data)}
-            >
+              >
               <div className="flex space-x-2 items-center">
                 <RadioGroupItem value="cod" id="cod" />
                 <Label htmlFor="option-one">Cash On Delivery</Label>
@@ -113,7 +152,7 @@ function Order() {
                       disabled={loading}
                       onChange={(e) => setDiscountCode(e.target.value)}
                       placeholder="Enter Discount Code."
-                    />
+                      />
                     <Tooltip title="Check code">
                       <Button
                         loading={loading}
@@ -126,7 +165,7 @@ function Order() {
                             isLoading(false);
                           }, 2000);
                         }}
-                      />
+                        />
                     </Tooltip>
                   </Space.Compact>
                 </div>
@@ -139,13 +178,14 @@ function Order() {
               </p>
               <Space.Compact>
                 <Button ghost onClick={()=>navigate(-1)}>Cancel</Button>
-                <Button type="primary" onClick={()=>placeOrder()}>Order</Button>
+                <Button type="primary" onClick={confirm}>Order</Button>
               </Space.Compact>
             </div>
           </div>
         </div>
       </div>
     </div>
+                        </>
   );
 }
 

@@ -343,21 +343,20 @@ async function addItemToCart(req, res) {
 async function placeOrder(req, res) {
   try {
     const { userID } = req.user;
-    const { Name, Email, Address, Number } = req.body;
+    const { Name, Email, Address, Number,paymentOpt } = req.body;
     let cart = await Cart.findOne({ userID });
 
     if (!cart) {
       return res.status(500).send("Cart is empty");
     }
-    console.log(cart);
     // Fetch item details for all items in the cart
-    const itemIDs = cart.items.map((item) => item.itemID);
-    const items = await Item.find({ itemID: { $in: itemIDs } });
-
+    const itemIDs = cart.items.map((item) => item.SKU);
+    const items = await Item.find({ 'variants.SKU': { $in: itemIDs } });
+    console.log("Items found",items);
+    console.log("Items ids found",itemIDs);
     // // Process each item in the cart
     for (const item of cart.items) {
-      const matchingItem = items.find((i) => i.itemID === item.itemID);
-      if (matchingItem) {
+      const matchingItem = items.find((i) => i.itemID == item.itemID);
         const matchingVariant = matchingItem.variants.find(
           (v) => v.SKU === item.SKU
         );
@@ -395,8 +394,22 @@ async function placeOrder(req, res) {
           }
           await matchingItem.save();
         }
-      }
+      
+      let paymentMethod = "Cash On Delivery"
+      let paymentStatus = "Pending"
+      
+      if(paymentOpt == "card"){
+        paymentMethod = "Debit/Credit Card"
+        paymentStatus = "Paid"
+        
+      }else if(paymentOpt == "wallet"){
+        paymentMethod = "Mobile Wallets"
+        paymentStatus = "Paid"
+      }else if(paymentOpt == "cod"){
+      paymentMethod = "Cash On Delivery"
+      paymentStatus = "Pending"
 
+      }
       // Create and save the order
       const currentDate = new Date();
       const formattedDate = formatDate(currentDate);
@@ -406,12 +419,12 @@ async function placeOrder(req, res) {
         number: Number,
         email: Email,
       };
-      console.log(customer);
-      console.log("Created At: ", formattedDate);
       const order = new Order({
         userID,
         customerInfo: customer,
         cart: cart,
+        paymentMethod,
+        paymentStatus,
         createdAt: formattedDate,
         totalAmount:cart.final.total+cart.final.dc+cart.final.discount
       });
