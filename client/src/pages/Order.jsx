@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import useGeneral from "../hooks/useGeneral";
 import useAuth from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -9,10 +9,11 @@ import { CheckOutlined } from "@ant-design/icons";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 import { Label } from "@radix-ui/react-label";
 import { axiosPrivate } from "../api/axios";
+import Navbar from "../components/Navbar";
 
 function Order() {
   const { auth } = useAuth();
-  const { darkMode, user, cart,setCart } = useGeneral();
+  const { user, cart,setCart} = useGeneral();
   const [loading, isLoading] = useState(false);
   const [paymentOpt, setPaymentOpt] = useState("cod");
   const [discountCode, setDiscountCode] = useState("");
@@ -20,6 +21,12 @@ function Order() {
   const [defAddr, setDefAddr] = useState(defaultAddr.address);
   const navigate = useNavigate();
   const [modal,contextHolder] = Modal.useModal();
+
+
+  useEffect(()=>{
+    console.log('use effect running')
+  },[])
+
   async function placeOrder(){
     let m = Modal.info();
     try{
@@ -50,7 +57,7 @@ function Order() {
         keyboard:true,
         onOk: m.destroy()
       })
-      if(err.response.data.cart.length ==0){
+      if(err.response.data.cart.length === 0){
         navigate('/')
       }
       setCart(err.response.data.cart)
@@ -71,11 +78,12 @@ function Order() {
     });
   };
 
-  if (cart.items?.length == 0) {
+  if (cart.items?.length === 0) {
     navigate("/");
   }
   return (
     <>
+    <Navbar />
     {contextHolder}
     <div className="p-8 flex justify-center">
       <div className="flex flex-col md:flex-row justify-center rounded-lg gap-8 w-full h-auto">

@@ -54,7 +54,7 @@ export default function Navbar() {
   const logout = useLogout();
   const axiosPrivate = useAxiosPrivate();
   
-    const {darkMode,isLoggedIn,wishlist,setWishlist,setUser,setCart,cart} = useGeneral();
+    const {darkMode,isLoggedIn,setWishlist,setUser,setCart} = useGeneral();
     const {auth,setAuth} = useAuth(); 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [details, setDetails] = useState({Name:"",Email:"" ,Role:""})
