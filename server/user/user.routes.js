@@ -1,5 +1,5 @@
 const express = require('express');
-const { displayUserDetails,addItemToCart,openDispute, addWishlist,getWishlist,updateProfile,placeOrder,getOrderHistory,cancelOrder,getCart,deleteItemFromCartBySKU,getProducts} = require('./user.controller');
+const { displayUserDetails,addItemToCart,openDispute,getCategories, getItem,addWishlist,getWishlist,updateProfile,placeOrder,getOrderHistory,cancelOrder,getCart,deleteItemFromCartBySKU,getProducts} = require('./user.controller');
 const {authenticate} = require('../middleware/authenticate');
 const router = express.Router();
 
@@ -15,6 +15,8 @@ router.post('/opendispute',authenticate, openDispute);
 router.post('/editwishlist',authenticate, addWishlist);
 router.get('/getwishlist',authenticate, getWishlist);
 router.get('/products', getProducts);
+router.post('/getItem', getItem);
+router.get('/categories', getCategories);
 
 
 

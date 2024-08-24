@@ -10,6 +10,8 @@ import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 import { Label } from "@radix-ui/react-label";
 import { axiosPrivate } from "../api/axios";
 import Navbar from "../components/Navbar";
+import { toast } from "sonner"
+
 
 function Order() {
   const { auth } = useAuth();
@@ -24,8 +26,11 @@ function Order() {
 
 
   useEffect(()=>{
-    console.log('use effect running')
-  },[])
+    if(cart.length == 0){
+      navigate('/')
+      toast.error("Cart is empty.")
+    }
+  },[cart])
 
   async function placeOrder(){
     let m = Modal.info();
@@ -137,11 +142,11 @@ function Order() {
                   <tbody>
                     <tr>
                       <td class="text-left">Total Cost</td>
-                      <td class="text-right">{cart.final.total}</td>
+                      <td class="text-right">{cart.final?.total}</td>
                     </tr>
                     <tr>
                       <td class="text-left">Delivery Charges</td>
-                      <td class="text-right">{cart.final.dc}</td>
+                      <td class="text-right">{cart.final?.dc}</td>
                     </tr>
                     {/* <tr>
                     <td class="text-left">TAX</td>
@@ -149,7 +154,7 @@ function Order() {
                     </tr> */}
                     <tr>
                       <td class="text-left">Discount</td>
-                      <td class="text-right">{cart.final.discount}</td>
+                      <td class="text-right">{cart.final?.discount}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -182,7 +187,7 @@ function Order() {
                 <Divider className="mb-0"/>
             <div className="flex justify-between p-4 rounded-b-xl bg-slate-200">
               <p className="text-lg font-medium">
-                Rs. {cart.final.total + cart.final.dc}
+                Rs. {cart.final?.total + cart.final?.dc}
               </p>
               <Space.Compact>
                 <Button ghost onClick={()=>navigate(-1)}>Cancel</Button>

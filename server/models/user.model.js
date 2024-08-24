@@ -53,6 +53,7 @@ const itemSchema = new mongoose.Schema({
     brand:{type: String, required:true, default:"No brand"},
     datePosted: { type: Date, default: Date.now, set: formatDate, immutable: true }, // Immutable prevents user input
     price:{type:Number, requried:true},
+    url:{type:String},
     variants: {
         type: [{
             Variant: String,
@@ -65,7 +66,36 @@ const itemSchema = new mongoose.Schema({
         default: []
     },
     isOOS: { type: Boolean, default: false },
-    category: { type: String, required: true }
+    category: { type: String,       enum: ['CPU', 'Motherboard', 'Memory', 'Cooling', 'GPU', 'Storage', 'PSU','Case','Mouse','Headset','Keyboard','Mousepad'], required: true },
+    type: {
+      type: String,
+      required: true,
+      validate: {
+          validator: function (v) {
+              const categoryTypeMap = {
+                  CPU: ['Intel', 'AMD'],
+                  GPU: ['AMD', 'Nvidia'],
+                  Memory: ['DDR4', 'DDR5'],
+                  Mouse: ['Wired', 'Wireless'],
+                  Headset: ['Wired', 'Wireless'],
+                  Motherboard: ['AMD', 'Intel'],
+                  Cooling: ['Air Cooling', 'Liquid Cooling','AIO Cooler'],
+                  Keyboard: ['Wired', 'Wireless'],
+                  Mousepad: ['Large', 'Medium', 'Small'],
+                  Storage: ['HDD', 'SSD','External HDD'],
+                  PSU:['Non Modular','Semi Modular','Fully Modular']
+
+              };
+              return !this.category || !categoryTypeMap[this.category] || categoryTypeMap[this.category].includes(v);
+          },
+          message: props => `${props.value} is not a valid type for category ${props.instance.category}`
+      }
+  }
+});
+
+const categoryTypeSchema = new mongoose.Schema({
+  Name: { type: String, required: true},
+  type: { type: [String], required: true }
 });
 
 const cartSchema = new mongoose.Schema({
@@ -200,5 +230,6 @@ const Item = mongoose.model('Item', itemSchema);
 const Cart = mongoose.model('Cart', cartSchema);
 const Order = mongoose.model('Order', orderSchema);
 const wishList = mongoose.model('Wishlist', wishlistSchema);
+const Category = mongoose.model('Category', categoryTypeSchema);
 
-module.exports = { User, Item,Cart,Order,wishList};
+module.exports = { User, Item,Cart,Order,wishList,Category};

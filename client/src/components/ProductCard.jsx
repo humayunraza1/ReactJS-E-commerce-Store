@@ -5,6 +5,7 @@ import useGeneral from '../hooks/useGeneral';
 import useAuth from '../hooks/useAuth';
 import { toast } from "sonner"
 import { axiosPrivate } from '../api/axios';
+import { Link } from 'react-router-dom';
 
 const { Meta } = Card;
 function ProductCard({itemName, description, price,itemID, thumbnail,SKU,variant})
@@ -13,6 +14,20 @@ function ProductCard({itemName, description, price,itemID, thumbnail,SKU,variant
   const {wishlist,cart,setCart,darkMode} = useGeneral();
   const {auth} = useAuth();
 console.log('wishlist',wishlist)
+
+
+function slugifyProduct(itemName, variant) {
+  // Combine itemName and variant with a separator (e.g., a space)
+  const combinedName = `${itemName} ${variant}`;
+
+  // Slugify the combined name
+  return combinedName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // Replace spaces and non-alphanumeric characters with hyphens
+    .replace(/^-+|-+$/g, ""); // Remove leading or trailing hyphens
+}
+
+const slug = slugifyProduct(itemName,variant);
 
 async function editWishlist(){
   if(auth.token == ""){
@@ -82,6 +97,7 @@ useEffect(()=>{
         }
       }
     }}>
+      <Link to={`/products/${slug}`}>
   <Card
   className={`${darkMode ? "bg-[#0a1018] border-[#111d2c] text-white":"bg-white"}`}
   style={{
@@ -109,6 +125,7 @@ useEffect(()=>{
       <p className='text-slate-400'>{variant}</p>
       <p>Rs. {price}</p>
   </Card>
+      </Link>
     </ConfigProvider>
 );
 }

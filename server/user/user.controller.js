@@ -1,4 +1,4 @@
-const { User, Item, Cart, Order, wishList } = require("../models/user.model");
+const { User, Item, Cart, Order, wishList,Category } = require("../models/user.model");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
@@ -225,11 +225,16 @@ async function updateProfile(req, res) {
 }
 
 async function getProducts(req, res) {
-  const { category, productName } = req.body;
-  if (!category && !productName) {
     const items = await Item.find();
     return res.status(200).send({ msg: "Products fetched", products: items });
-  }
+  
+}
+
+async function getItem(req,res){
+  const {url} = req.body;
+  console.log(url)
+  const item = await Item.find({url:url});
+  return res.status(200).send({msg:"Item found", item}) 
 }
 
 //
@@ -581,6 +586,12 @@ async function deleteItemFromCartBySKU(req, res) {
   }
 }
 
+async function getCategories(req,res){
+  const categories = await Category.find();
+  return res.status(200).send({message:"categories fetched",category:categories});
+}
+
+
 // Schedule the function to run every 5 minutes
 const interval = setInterval(handleExpiredDatabaseEntries, 0.5 * 60 * 1000); // Runs every 5 minutes
 
@@ -627,7 +638,9 @@ module.exports = {
   placeOrder,
   getOrderHistory,
   cancelOrder,
+  getCategories,
   deleteItemFromCartBySKU,
   getCart,
   updateProfile,
+  getItem
 };

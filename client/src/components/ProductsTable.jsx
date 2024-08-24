@@ -1,9 +1,24 @@
 import React, { useEffect, useState } from "react"
-import { Divider, Pagination,Layout, Menu, theme, ConfigProvider } from 'antd';
+import { Divider, Pagination,Layout, Menu, theme, ConfigProvider, Button } from 'antd';
 import ProductCard from './ProductCard';
 import Grid from '@mui/material/Unstable_Grid2'
-import { axiosPrivate } from "../api/axios";
+import axios, { axiosPrivate } from "../api/axios";
 import useGeneral from "../hooks/useGeneral";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSub,
+  DropdownMenuPortal,
+  DropdownMenuItem,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu"
 const { Header, Content, Footer, Sider } = Layout;
 
 
@@ -60,6 +75,8 @@ const [startIndex,setStartIndex] = useState(0)
 const [endIndex,setEndIndex] = useState(rowsPerPage)
 const {darkMode} = useGeneral();
 
+const [categ,setCateg] = useState([]);
+const [position,setPosition] = useState("");
 const onChange = (pageNumber) => {
   setStartIndex((pageNumber-1)*rowsPerPage)
   setEndIndex(rowsPerPage*pageNumber)
@@ -91,18 +108,62 @@ const onChange = (pageNumber) => {
     ));
     
   }
-
-  useEffect(()=>{
-    getProducts();
-  },[])
-
-    const {
+  let c;
+  async function getCategories(){
+    try{
+      
+      const response = await axios.get('/users/categories',{headers:{'Content-Type':'application/json'}});
+      const {category} = response.data;
+      setCateg(response.data.category)
+    }catch(err){
+      console.log(err);
+    }
+  }
+  
+  
+    useEffect(()=>{
+      getProducts();
+      getCategories();
+    },[])
+    
+  const {
         token: { colorBgContainer, borderRadiusLG },
       } = theme.useToken();
   return (
     <>
     {children}
 <Layout>
+<DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button>Open</Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuLabel>Filter</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {categ.map((i)=>{return (
+        <DropdownMenuSub>
+ <DropdownMenuSubTrigger>{i.Name}</DropdownMenuSubTrigger>
+ <DropdownMenuPortal>
+ <DropdownMenuSubContent>
+
+   <DropdownMenuRadioGroup value={position} onValueChange={setPosition}>
+    {i.type.map((t,idx)=>{return (
+      <DropdownMenuRadioItem
+      key={idx}
+      value={t}
+      >
+      {t}
+    </DropdownMenuRadioItem>
+    )
+
+    })}
+   </DropdownMenuRadioGroup>
+  </DropdownMenuSubContent>
+ </DropdownMenuPortal>
+</DropdownMenuSub>
+      )})}
+      </DropdownMenuContent>
+    </DropdownMenu>
       <Content
         style={{
           height: '100dvh',

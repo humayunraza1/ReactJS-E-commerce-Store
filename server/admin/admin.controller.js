@@ -1,4 +1,4 @@
-const {User,Item,Order} = require('../models/user.model');
+const {User,Item,Order,Category} = require('../models/user.model');
 const { v4: uuidv4 } = require('uuid');
 
 function generateShortUUID() {
@@ -31,6 +31,13 @@ async function getOrders(req,res){
     }
     return res.status(200).send({message: `found ${orders.length}`, orders})
 }
+
+async function editCategories(req,res){
+    const {Name,types} = req.body;
+    const category = new Category({Name:Name, type:types})
+    category.save();
+    return res.status(200).send('Category Added');
+ }
 
 async function handleDispute(req,res){
     const {userID} = req.user;
@@ -95,4 +102,4 @@ const addItem = async (req, res) => {
 
 
 
-module.exports = {adminDashboard,addItem,getOrders,updateStatus,handleDispute};
+module.exports = {adminDashboard,addItem,getOrders,updateStatus,handleDispute,editCategories};

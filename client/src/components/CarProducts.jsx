@@ -47,7 +47,7 @@ function CartProducts () {
 
     return (
     <>
-{cart.items.map((item,index)=>{
+{cart?.items?.map((item,index)=>{
   return (          <div key={index} className="p-4 relative">
     <div className="flex p-2 w-full items-center border-2 rounded-lg hover:bg-slate-50 justify-evenly">
       <div className="h-[70px] w-[70px] rounded-xl ">

@@ -12,6 +12,7 @@ import Unauthorized from "./pages/Unauthorized";
 import AdminDashboard from "./pages/AdminDashboard";
 import PersistLogin from "./components/PersistLogin";
 import Order from "./pages/Order";
+import Products from "./pages/Products";
 function App() {
   const { auth } = useContext(AuthContext);
   return (
@@ -28,7 +29,7 @@ function App() {
         {/* Protected Routes */}
         <Route element={<PersistLogin />}>
           <Route path="/" element={<Store />} />
-          <Route path="/products/:productName" element={<Store />} />
+          <Route path="/products/:productName" element={<Products />} />
           <Route element={<RequireAuth allowedRole={"Admin"} />}>
             <Route path="admin" element={<AdminDashboard />} />
           </Route>
