@@ -28,7 +28,7 @@ function slugifyProduct(itemName, variant) {
 }
 
 const slug = slugifyProduct(itemName,variant);
-
+console.log("slug: ",slug)
 async function editWishlist(){
   if(auth.token == ""){
     toast.error("Please login to add item to wishlist.")
@@ -97,7 +97,6 @@ useEffect(()=>{
         }
       }
     }}>
-      <Link to={`/products/${slug}`}>
   <Card
   className={`${darkMode ? "bg-[#0a1018] border-[#111d2c] text-white":"bg-white"}`}
   style={{
@@ -105,6 +104,7 @@ useEffect(()=>{
     padding:"4px",
   }}
   cover={
+      <Link to={`/products/${slug}`}>
     <div style={{display:'flex', justifyContent:"center"}}>
       <img
         alt={itemName}
@@ -112,6 +112,7 @@ useEffect(()=>{
         className='h-[200px]'
         />
         </div>
+    </Link>
     }
     actions={[
       inWishlist ? <HeartFilled style={{color: darkMode && "white"}} onClick={()=>editWishlist()} key="wishlist"/>:<HeartOutlined style={{color: darkMode && "white"}} onClick={()=>editWishlist()} key="wishlist"/>,
@@ -120,12 +121,10 @@ useEffect(()=>{
     >
       <Meta
       title={itemName+` - `+variant}
-      description={description}
       />
       <p className='text-slate-400'>{variant}</p>
       <p>Rs. {price}</p>
   </Card>
-      </Link>
     </ConfigProvider>
 );
 }

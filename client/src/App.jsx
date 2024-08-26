@@ -33,9 +33,7 @@ function App() {
           <Route element={<RequireAuth allowedRole={"Admin"} />}>
             <Route path="admin" element={<AdminDashboard />} />
           </Route>
-          <Route element={<RequireAuth allowedRole={"User"} />}>
             <Route path="dashboard" element={<UserDashboard />} />
-          </Route>
             <Route path="order" element={<Order />} />
         </Route>
       </Route>
