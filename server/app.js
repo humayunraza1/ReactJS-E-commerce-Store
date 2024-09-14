@@ -18,6 +18,10 @@ app.use('/users',  userRoutes);
 app.use('/admin',  adminRoutes);
 
 const port = 3000;
+app.get('/',(req,res)=>{
+  res.send('Welcome to server')
+})
+
 app.listen(port, () => {
   console.log(`Server started on port ${port}`);
 });

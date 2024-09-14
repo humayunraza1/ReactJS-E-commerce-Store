@@ -30,6 +30,7 @@ import useLogout from '../hooks/useLogout'
 import useAxiosPrivate from '../hooks/useAxiosPrivate'
 import AvatarComp from './Avatar'
 import CustomPopOver from './CustomPopOver'
+import Cart from './Cart'
 
 const products = [
   { name: 'Analytics', description: 'Get a better understanding of your traffic', href: '#', icon: ChartPieIcon },
@@ -53,21 +54,61 @@ export default function Navbar() {
   const logout = useLogout();
   const axiosPrivate = useAxiosPrivate();
   
-    const {darkMode,isLoggedIn} = useGeneral();
+    const {darkMode,isLoggedIn,setWishlist,setUser,setCart} = useGeneral();
     const {auth,setAuth} = useAuth(); 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [details, setDetails] = useState({Name:"",Email:"" ,Role:""})
+  async function getwishlist(){
+    try{
+
+      const response = await axiosPrivate.get('/users/getwishlist',{
+        headers:{
+          'Authorization':auth.token,
+          'Content-Type':'application/json'
+        }
+      })
+      console.log(response.data);
+      if(response.data.items == []){
+       return setWishlist([])
+      }
+      console.log(response.data)
+      setWishlist(response.data.wishlist.items)
+    }catch(err){
+      console.log(err);
+    }
+    }
+
+async function getCart(){
+  try{
+    const response = await axiosPrivate.get('/users/getcart',{
+      headers:{
+        'Authorization':auth.token,
+        'Content-Type': 'application/json'
+      }
+    })
+    setCart(response.data.cart)
+    console.log(response.data.cart);
+  }catch(err){
+    console.log(err)
+  }
+}
+
+
+
+
 async function getDetails(){
   try{
-    const response = await axiosPrivate.get('http://localhost:3000/users/dashboard',{
+    const response = await axiosPrivate.get('/users/dashboard',{
       headers:{'Content-Type': 'application/json',
       'Authorization' : auth.token
     },
     withCredentials:true      
   })
   
-  const data = response.data
-  setDetails({Name: data.user.name, Email: data.user.email, Role: data.user.role})
+  const {user} = response.data
+  setDetails({Name: user.name, Email: user.email, Role: user.role})
+  setUser({name:user.name, email:user.email, googleId:user.googleId,number:user.number, userId: user.userID, address:user.address})
+
   // console.log(data);
 }catch(err){
   console.log(err)
@@ -81,6 +122,8 @@ async function signout(){
 useEffect(()=>{
   if(auth.token !== ""){
   getDetails()
+  getwishlist()
+  getCart()
   }
 },[auth])
 
@@ -166,6 +209,7 @@ useEffect(()=>{
             Company
           </a>
         </PopoverGroup>
+        <Cart/>
 <div className={`hidden lg:flex lg:flex-1 lg:justify-end ${darkMode ? 'text-white':'text-black'}`}>
 { isLoggedIn  ?     <div><PopoverGroup className={`${darkMode ? 'text-white':'text-black'} hidden lg:flex lg:gap-x-12`}>
       <Popover className="relative" >
@@ -239,6 +283,7 @@ useEffect(()=>{
           </a>
           }
         </div>
+        
       </nav>
       <Dialog className="lg:hidden" open={mobileMenuOpen} onClose={setMobileMenuOpen}>
         <div className="fixed inset-0 z-10" />

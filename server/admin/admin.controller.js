@@ -1,4 +1,4 @@
-const {User,Item,Order} = require('../models/user.model');
+const {User,Item,Order,Category} = require('../models/user.model');
 const { v4: uuidv4 } = require('uuid');
 
 function generateShortUUID() {
@@ -31,6 +31,13 @@ async function getOrders(req,res){
     }
     return res.status(200).send({message: `found ${orders.length}`, orders})
 }
+
+async function editCategories(req,res){
+    const {Name,types} = req.body;
+    const category = new Category({Name:Name, type:types})
+    category.save();
+    return res.status(200).send('Category Added');
+ }
 
 async function handleDispute(req,res){
     const {userID} = req.user;
@@ -71,28 +78,127 @@ async function updateStatus(req,res){
     return res.status(200).send({order: `Order ${orderID} status updated to ${order.status}`})
 }
 
-const addItem = async (req, res) => {
-    try{
 
+
+const addItem = async (req, res) => {
+    try {
+      const { userID } = req.user;
+      const user = await User.findOne({ userID });
+  
+      // Check if the user has the 'Admin' role
+      if (user.role === 'User') {
+        return res.status(401).send({ message: "Unauthorized. Redirecting to user dashboard.", url: "/user/dashboard" });
+      }
+  
+      const { itemName, description, url, brand, thumbnail, variants, type, category } = req.body;
+  
+      // Check if the product with the same name already exists
+      const existingItem = await Item.findOne({ itemName });
+      if (existingItem) {
+        return res.status(400).send({ message: "Product with this name already exists." });
+      }
+  
+      // Check if the URL is unique
+      const existingURL = await Item.findOne({ url });
+      if (existingURL) {
+        return res.status(400).send({ message: "URL already exists." });
+      }
+  
+      // Validate the URL format: only alphanumeric characters and hyphens allowed
+      const urlRegex = /^[a-zA-Z0-9-]+$/;
+      if (!urlRegex.test(url)) {
+        return res.status(400).send({ message: "URL can only contain alphanumeric characters and hyphens." });
+      }
+  
+      // Process the variants
+      let finalVariants = [];
+      for (const item of variants) {
+        // Convert price and stock from string to number
+        const price = parseFloat(item.price);
+        const stock = parseInt(item.stock);
+  
+        // Generate SKU
+        const sku = 'SKU-' + generateShortUUID() + `${userID}-` + item.Variant;
+        finalVariants.push({ 
+          Variant: item.Variant, 
+          thumbnail: item.thumbnail,
+          SKU: sku, 
+          isAvailable: item.isAvailable, 
+          stock, 
+          price 
+        });
+      }
+  
+      // Create and save the new item
+      const item = new Item({
+        itemName,
+        itemDescription: description,
+        url,  // Pass the validated URL
+        thumbnail,
+        brand,
+        type,
+        variants: finalVariants,
+        category
+      });
+  
+      await item.save();
+  
+      return res.status(201).send({ message: "Item added successfully", item: item.itemID });
+  
+    } catch (error) {
+      return res.status(500).send({ message: "Unknown error occurred", error: error });
+    }
+  };
+  
+
+
+async function addVariant(req, res) {
+    try {
         const { userID } = req.user;
+        const { itemID, newVariant } = req.body;
+
+        // Fetch user and item from the database
         const user = await User.findOne({ userID });
-        if(user.role === 'User'){
-            return res.status(401).send({message:"Unauthorized. Redirecting to user dashboard.",url:"/user/dashboard"})
+        const item = await Item.findOne({ itemID });
+
+        // Check if the user has permission to add variants
+        if (user.role === 'User') {
+            return res.status(401).send({ message: "Unauthorized. Redirecting to user dashboard.", url: "/user/dashboard" });
         }
-        const {itemName,description,price,brand,stock,thumbnail,variants,category} = req.body;
-        finalVariants = []
-        for(const item of variants){
-            sku = 'SKU-'+generateShortUUID()+`${userID}-`+item;
-            finalVariants.push({Variant: item, SKU:sku});
+
+        // Check if the item exists
+        if (!item) {
+            return res.status(404).send({ message: "Item not found." });
         }
-        const item = new Item({itemName,itemDescription:description,price,thumbnail,brand,stock,variants:finalVariants,category});
+
+        // Check if the variant name is unique within the item's variants
+        const variantNameExists = item.variants.some(variant => variant.Variant === newVariant.Variant);
+        if (variantNameExists) {
+            return res.status(400).send({ message: `Variant name "${newVariant.Variant}" already exists in the item.` });
+        }
+
+        // Set of existing SKUs for quick lookup
+        const existingSKUs = new Set(item.variants.map(variant => variant.SKU));
+
+        // Generate a unique SKU using your custom format
+        const newSKU = await generateUniqueSKU(userID, itemID, existingSKUs);
+
+        // Set the generated SKU to the new variant
+        newVariant.SKU = newSKU;
+        console.log(newVariant);
+        // Add the new variant to the item's variants array
+        item.variants.push(newVariant);
+
+        // Save the updated item
         await item.save();
-        return res.status(201).send({message:"Item added successfuly", item:item.itemID});
-    } catch(error){
-        return res.status(404).send({message:"Unknown error occurred", error:error})
+
+        res.status(200).send({ message: "Variant added successfully.", item });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ message: "An error occurred while adding the variant.", error: error.message });
     }
 }
 
 
 
-module.exports = {adminDashboard,addItem,getOrders,updateStatus,handleDispute};
+module.exports = {adminDashboard,addVariant,addItem,getOrders,updateStatus,handleDispute,editCategories};

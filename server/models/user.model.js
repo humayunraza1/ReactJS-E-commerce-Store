@@ -46,38 +46,77 @@ const userSchema = new mongoose.Schema({
 
 // Define the item schema
 const itemSchema = new mongoose.Schema({
-    itemID: { type: Number, unique: true, immutable: true }, // Immutable prevents user input
-    itemName: { type: String, required: true },
-    itemDescription: { type: String, required: true },
-    thumbnail: { type: String },
-    brand:{type: String, required:true, default:"No brand"},
-    datePosted: { type: Date, default: Date.now, set: formatDate, immutable: true }, // Immutable prevents user input
-    price:{type:Number, requried:true},
-    variants: {
-        type: [{
-            Variant: String,
-            thumbnail:{type:String, required: true},
-            SKU: { type: String, unique: true },
-            stock: {type:Number, required:true},
-            price:{type:Number, required:true},
-            isOOS:{type:Boolean, default:false}
-        }],
-        default: []
-    },
-    isOOS: { type: Boolean, default: false },
-    category: { type: String, required: true }
+  itemID: { type: Number, unique: true, immutable: true }, 
+  itemName: { type: String, required: true },
+  itemDescription: { type: String, required: true },
+  thumbnail: { type: String },
+  brand: { type: String, required: true, default: "No brand" },
+  datePosted: { type: Date, default: Date.now, immutable: true },// Add price field here if it's a global price
+  url: { type: String, unique: true, required: true }, // Make sure URL is unique
+  variants: {
+    type: [{
+      Variant: { type: String, required: true },  // Ensure Variant is a string
+      thumbnail: { type: String, required: true },
+      SKU: { type: String, unique: true },  // Unique SKU per variant
+      isAvailable: { type: Boolean, default: true },
+      stock: { type: Number, required: true },  // Ensure stock is a number
+      price: { type: Number, required: true },  // Ensure price is a number
+      isOOS: { type: Boolean, default: false }
+    }],
+    default: []
+  },
+  category: { 
+    type: String, 
+    enum: ['CPU', 'Motherboard', 'Memory', 'Cooling', 'GPU', 'Storage', 'PSU','Case','Mouse','Headset','Keyboard','Mousepad'], 
+    required: true 
+  },
+  type: {
+    type: String,
+    required: true,
+    validate: {
+      validator: function (v) {
+        const categoryTypeMap = {
+          CPU: ['Intel', 'AMD'],
+          GPU: ['AMD', 'Nvidia'],
+          Memory: ['DDR4', 'DDR5'],
+          Mouse: ['Wired', 'Wireless'],
+          Headset: ['Wired', 'Wireless'],
+          Motherboard: ['AMD', 'Intel'],
+          Cooling: ['Air Cooling', 'Liquid Cooling','AIO Cooler'],
+          Keyboard: ['Wired', 'Wireless'],
+          Mousepad: ['Large', 'Medium', 'Small'],
+          Storage: ['HDD', 'SSD','External HDD'],
+          PSU: ['Non Modular', 'Semi Modular', 'Fully Modular']
+        };
+        return !this.category || !categoryTypeMap[this.category] || categoryTypeMap[this.category].includes(v);
+      },
+      message: props => `${props.value} is not a valid type for category ${props.instance.category}`
+    }
+  }
+});
+
+
+const categoryTypeSchema = new mongoose.Schema({
+  Name: { type: String, required: true},
+  type: { type: [String], required: true }
 });
 
 const cartSchema = new mongoose.Schema({
   userID: { type: Number, immutable: true },
   items: [{
       itemID: { type: Number, immutable: true },
+      name:String,
       cost: Number,
       qty: Number,
       variant: {type: String, default: "none"},
       SKU: {type:String, required:true},
       thumbnail: {type:String}
   }],
+  final:{
+    total:Number,
+    dc:Number,
+    discount:Number
+  },
   expiresAfter: { type: Date, default: Date.now} // Expires after 1 hour
 });
 
@@ -194,5 +233,6 @@ const Item = mongoose.model('Item', itemSchema);
 const Cart = mongoose.model('Cart', cartSchema);
 const Order = mongoose.model('Order', orderSchema);
 const wishList = mongoose.model('Wishlist', wishlistSchema);
+const Category = mongoose.model('Category', categoryTypeSchema);
 
-module.exports = { User, Item,Cart,Order,wishList};
+module.exports = { User, Item,Cart,Order,wishList,Category};

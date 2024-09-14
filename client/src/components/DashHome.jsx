@@ -6,41 +6,13 @@ import { Avatar, Button } from "antd";
 import { DataTableDemo } from "./Wishlist";
 import { useNavigate } from "react-router-dom";
 
-function DashHome () {
+function DashHome ({className}) {
 
-  const {auth} = useAuth();
-  const {darkMode,isLoading,setIsLoading,wishlist,user,setUser} = useGeneral();
+  const {darkMode,isLoading,user,setUser} = useGeneral();
   const navigate = useNavigate();
-  async function getDetails(){
-    setIsLoading(true);
-    try{
-      const response = await axiosPrivate.get('http://localhost:3000/users/dashboard',{
-        headers:{
-          'Authorization':auth.token,
-          'Content-Type': 'application/json'
-        }
-
-      })
-
-     const {user} = response.data
-      setUser({name:user.name, email:user.email, googleId:user.googleId, userId: user.userID, address:user.address})
-      console.log(user.address)
-    }catch(err){
-      console.log(err)
-    }finally{
-      setIsLoading(false);
-    }
-  }
-  useEffect(()=>{
-   
-    getDetails()
-  
-  },[])
-
-
 
   return (
-    <>
+    <div className={className}>
     { isLoading ? <h1>Loading....</h1> :
 
       <div className={`${darkMode ? 'text-white':'text-black'} flex flex-col justify-center w-full items-center gap-5`}>
@@ -56,44 +28,11 @@ function DashHome () {
         <Button type="primary" ghost className="mt-3" onClick={()=>{navigate('/dashboard?tab=settings')}}>Edit</Button>
         </div>
       </div>
-        <div className="h-[200px] bg-green-200 rounded-lg p-4 flex items-center gap-5 justify-center">
-          <div className="bg-blue-50 rounded-xl w-[150px] h-[150px] text-center justify-center flex flex-col">
-            <p className="text-[4rem] text-slate-400">
-              0
-              </p>
-              <p className="font-medium">
-                Orders Placed
-              </p>
-          </div>
-          <div className="bg-blue-50 rounded-xl w-[150px] h-[150px] text-center justify-center flex flex-col">
-            <p className="text-[4rem] text-slate-400">
-              0
-              </p>
-              <p className="font-medium">
-                Orders Pending
-              </p>
-          </div>
-          <div className="bg-blue-50 rounded-xl w-[150px] h-[150px] text-center justify-center flex flex-col">
-            <p className="text-[4rem] text-slate-400">
-              {wishlist.length}
-              </p>
-              <p className="font-medium">
-                Wishlist
-              </p>
-          </div>
-          <div className="bg-blue-50 rounded-xl w-[150px] h-[150px] text-center justify-center flex flex-col">
-            <p className="text-[4rem] text-slate-400">
-              0
-              </p>
-              <p className="font-medium">
-                Disputes
-              </p>
-          </div>
-        </div>
+       {/* Add Numerical Data Here */}
         <DataTableDemo/>
     </div>
     }
-    </>
+    </div>
   )
 };
 
