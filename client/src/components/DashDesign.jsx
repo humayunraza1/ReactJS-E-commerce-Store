@@ -16,7 +16,8 @@ import useGeneral from '../hooks/useGeneral';
 import DashHome from './DashHome';
 import MobileTabs from './MobileTabs';
 import useAuth from '../hooks/useAuth';
-import AddProducts from './AddProducts';
+import ListProducts from './ListProducts';
+import AddProduct from './AddProduct';
 const { Header, Content, Footer, Sider } = Layout;
 function getItem(label, key, icon, children) {
   return {
@@ -40,7 +41,7 @@ const items = [
 const adminItems = [
   getItem('Home', '0', <HomeOutlined />),
   getItem('Settings', '1', <SettingOutlined />),
-  getItem('Products', '20', <HomeOutlined />),
+  getItem('Products', '200', <HomeOutlined />,[{key:'20',label:"Manage Products"},{key:'21',label:"Add Product"}]),
   getItem('Users', '30', <UserOutlined />),
   getItem('Vouchers', '40', <HistoryOutlined />),
   getItem('Orders', '50', <HistoryOutlined />),
@@ -55,7 +56,7 @@ const DashDesign = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const userTabValues = ['settings','order-history','disputes'] 
-  const adminTabValues = ['settings','products','orders','vouchers','users','disputes'] 
+  const adminTabValues = ['settings','products','orders','vouchers','users','disputes','add-product'] 
 
   useEffect(()=>{
     if(auth?.user?.role == "User"){
@@ -89,6 +90,9 @@ const DashDesign = () => {
       if(tabValue == 'products'){
         setCurrent('20')
       }
+      if(tabValue == 'add-product'){
+        setCurrent('21')
+      }
       if(tabValue == 'orders'){
         setCurrent('50')
       }
@@ -107,7 +111,7 @@ const DashDesign = () => {
 
   const onClick = (e) => {
     console.log('click ', e);
-    if(e.keyPath.length == 1){
+    if(e.keyPath.length >= 1){
     console.log('Key: ', e.key);
     if(e.key == 0){
       navigate('/dashboard')
@@ -131,6 +135,13 @@ const DashDesign = () => {
       setCurrent(0);
       }
       setSearchParams({ad:"products"});
+    }
+    if(e.key == 21){
+      if(auth?.user?.role !== "Admin"){
+      navigate('/dashboard');
+      setCurrent(0);
+      }
+      setSearchParams({ad:"add-product"});
     }
     if(e.key == 30){
       if(auth?.user?.role !== "Admin"){
@@ -224,7 +235,8 @@ const DashDesign = () => {
            {current == '05' && <Disputes/>}
            {current == '16' && <Disputes/>}
            {current == '27' && <Disputes/>}
-           {current == '20' && <AddProducts/>}
+           {current == '20' && <ListProducts/>}
+           {current == '21' && <AddProduct/>}
           </div>
         </Content>
         <Footer

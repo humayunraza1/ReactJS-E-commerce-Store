@@ -13,6 +13,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import PersistLogin from "./components/PersistLogin";
 import Order from "./pages/Order";
 import Products from "./pages/Products";
+import EditProduct from "./pages/EditProduct";
+import AddNew from "./pages/AddNew";
 function App() {
   const { auth } = useContext(AuthContext);
   return (
@@ -31,7 +33,8 @@ function App() {
           <Route path="/" element={<Store />} />
           <Route path="/products/:productName" element={<Products />} />
           <Route element={<RequireAuth allowedRole={"Admin"} />}>
-            <Route path="admin" element={<AdminDashboard />} />
+            <Route path="/edit/:productName" element={<EditProduct />} />
+            <Route path="/product/new" element={<AddNew />} />
           </Route>
             <Route path="dashboard" element={<UserDashboard />} />
             <Route path="order" element={<Order />} />

@@ -33,6 +33,8 @@ function Products () {
     // The rest is the itemName
     const url = parts.join("-");
   
+
+
     useEffect(()=>{
       getItem();
     },[productName])
