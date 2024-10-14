@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@lexical/file": "^0.18.0",
+    "@lexical/react": "^0.18.0",
+    "@lexical/yjs": "^0.18.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1"
+  }
+}

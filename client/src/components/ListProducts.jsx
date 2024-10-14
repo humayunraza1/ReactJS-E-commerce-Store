@@ -42,10 +42,11 @@ function ListProducts () {
             data = ldata?.flatMap((prod, index) =>
               {
                 return ({key:index,itemName: prod.itemName, itemID:prod.itemID, children:prod.variants, url:prod.url, thumbnail:prod.thumbnail,isOOS:null,action:true})}  );
-
+    console.log("data response: ", response)
     setProducts(data);
     setLoading(false);
     console.log("data: ",data)
+    ldata.map(item => console.log(item.itemName))
 }catch(err){
     console.log(err)
     setLoading(false);
