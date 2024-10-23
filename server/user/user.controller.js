@@ -232,8 +232,8 @@ async function getProducts(req, res) {
 
 async function getItem(req,res){
   const {url} = req.body;
-  console.log(url)
   const item = await Item.find({url:url});
+  console.log(item)
   return res.status(200).send({msg:"Item found", item}) 
 }
 

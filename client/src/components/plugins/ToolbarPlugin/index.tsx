@@ -825,18 +825,18 @@ export default function ToolbarPlugin({
     [applyStyleText],
   );
 
-  const insertLink = useCallback(() => {
-    if (!isLink) {
-      setIsLinkEditMode(true);
-      activeEditor.dispatchCommand(
-        TOGGLE_LINK_COMMAND,
-        sanitizeUrl('https://'),
-      );
-    } else {
-      setIsLinkEditMode(false);
-      activeEditor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
-    }
-  }, [activeEditor, isLink, setIsLinkEditMode]);
+  // const insertLink = useCallback(() => {
+  //   if (!isLink) {
+  //     setIsLinkEditMode(true);
+  //     activeEditor.dispatchCommand(
+  //       TOGGLE_LINK_COMMAND,
+  //       sanitizeUrl('https://'),
+  //     );
+  //   } else {
+  //     setIsLinkEditMode(false);
+  //     activeEditor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
+  //   }
+  // }, [activeEditor, isLink, setIsLinkEditMode]);
 
   const onCodeLanguageSelect = useCallback(
     (value: string) => {
@@ -980,7 +980,7 @@ export default function ToolbarPlugin({
               <i className="format code" />
             </button>
           )}
-          <button
+          {/* <button
             disabled={!isEditable}
             onClick={insertLink}
             className={'toolbar-item spaced ' + (isLink ? 'active' : '')}
@@ -988,7 +988,7 @@ export default function ToolbarPlugin({
             title="Insert link"
             type="button">
             <i className="format link" />
-          </button>
+          </button> */}
           <DropdownColorPicker
             disabled={!isEditable}
             buttonClassName="toolbar-item color-picker"

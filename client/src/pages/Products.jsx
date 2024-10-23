@@ -8,6 +8,7 @@ import { Button,Tooltip } from "antd";
 import useGeneral from "../hooks/useGeneral";
 import { Label } from "../components/ui/label"
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group"
+import "../components/css/editor2.css";
 
 import {
   PlusOutlined,
@@ -44,8 +45,6 @@ function Products () {
       }
       })
       setItem(item.data.item[0])
-
-    
       setVar(item.data.item[0].variants.find(v=> v.Variant.toLowerCase() === variant));
        
     }
@@ -108,7 +107,7 @@ function Products () {
   return (
     <>
     <Navbar/>
-    <div className="flex justify-center">
+    <div className="flex flex-col items-center">
     <div className="flex flex-col lg:flex-row gap-8 w-[80dvw] p-8 bg-slate-50">  
   <div className="bg-slate-100 w-full lg:w-[500px] flex justify-center">
     <img src={Var.thumbnail} className="w-[500px]"/>
@@ -150,10 +149,15 @@ function Products () {
       </Tooltip>
     </div>}
     </div>
-
     </div>
   </div>      
+        <div className="w-[80dvw] bg-slate-200">
+          <h1>Specifications</h1>
+          <div dangerouslySetInnerHTML={{ __html: Item.itemSpecifications }} />
+        </div>
     </div>
+      <div>
+      </div>
     </>
   )
 };

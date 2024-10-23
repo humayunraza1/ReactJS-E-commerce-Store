@@ -27,7 +27,7 @@ export default function LexicalContentEditable({
       className={className ?? 'ContentEditable__root'}
       aria-placeholder={placeholder}
       placeholder={
-        <div className={placeholderClassName ?? 'ContentEditable__placeholder'}>
+        <div onChange={(e) => console.log((e.target as HTMLInputElement).value)} className={placeholderClassName ?? 'ContentEditable__placeholder'}>
           {placeholder}
         </div>
       }

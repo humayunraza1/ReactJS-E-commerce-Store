@@ -90,8 +90,8 @@ const addItem = async (req, res) => {
         return res.status(401).send({ message: "Unauthorized. Redirecting to user dashboard.", url: "/user/dashboard" });
       }
   
-      const { itemName, description, url, brand, thumbnail, variants, type, category } = req.body;
-  
+      const { itemName, description, specifications, url, brand, thumbnail, variants, type, category } = req.body;
+      console.log(specifications);
       // Check if the product with the same name already exists
       const existingItem = await Item.findOne({ itemName });
       if (existingItem) {
@@ -133,6 +133,7 @@ const addItem = async (req, res) => {
       const item = new Item({
         itemName,
         itemDescription: description,
+        itemSpecifications:specifications,
         url,  // Pass the validated URL
         thumbnail,
         brand,
@@ -198,7 +199,6 @@ async function addVariant(req, res) {
         res.status(500).send({ message: "An error occurred while adding the variant.", error: error.message });
     }
 }
-
 
 
 module.exports = {adminDashboard,addVariant,addItem,getOrders,updateStatus,handleDispute,editCategories};

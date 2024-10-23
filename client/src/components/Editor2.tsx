@@ -15,8 +15,7 @@ import {RichTextPlugin} from '@lexical/react/LexicalRichTextPlugin';
 import {TabIndentationPlugin} from '@lexical/react/LexicalTabIndentationPlugin';
 import {TablePlugin} from '@lexical/react/LexicalTablePlugin';
 import {useLexicalEditable} from '@lexical/react/useLexicalEditable';
-import * as React from 'react';
-import {useEffect, useState} from 'react';
+import React, { useImperativeHandle, forwardRef, useState, useEffect } from 'react';
 import {CAN_USE_DOM} from '../shared/src/canUseDOM';
 
 import {createWebsocketProvider} from './collaboration';
@@ -52,16 +51,15 @@ import ContentEditable from './ui/ContentEditable';
 
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {$generateHtmlFromNodes} from '@lexical/html'
-import Button from './ui/Button2';
 
 const skipCollaborationInit =
   // @ts-expect-error
   window.parent != null && window.parent.frames.right === window;
 
-export default function Editor2(): JSX.Element {
+
+  export default forwardRef(function Editor2(_, ref) {
   const {historyState} = useSharedHistoryContext();
   const [editor] = useLexicalComposerContext();
-
   const {
     settings: {
       isCollab,
@@ -96,6 +94,8 @@ export default function Editor2(): JSX.Element {
     }
   };
 
+
+
   useEffect(() => {
     const updateViewPortWidth = () => {
       const isNextSmallWidthViewport =
@@ -113,17 +113,18 @@ export default function Editor2(): JSX.Element {
     };
   }, [isSmallWidthViewport]);
 
-  const saveContent = () => {
-    // const contentState = editorState.getCurrentContent();
-    // const rawContent = convertToRaw(contentState);
-    // // This is where you would send rawContent to your database
-    // console.log("Saving content:", JSON.stringify(rawContent));
+  function SaveContent(){
+    let htmlString;
     editor.update(() => {
-      const htmlString = $generateHtmlFromNodes(editor);
-      console.log(htmlString); // Store the HTML string in state
+      htmlString = $generateHtmlFromNodes(editor);
+      // console.log(htmlString); // Store the HTML string in state
     });
+    return htmlString;
   };
 
+  useImperativeHandle(ref, () => ({
+    saveContent: SaveContent, // Expose the SaveContent function
+  }));
   return (
     <>
       {isRichText && <ToolbarPlugin setIsLinkEditMode={setIsLinkEditMode} />}
@@ -145,8 +146,6 @@ export default function Editor2(): JSX.Element {
         <KeywordsPlugin />
         <AutoLinkPlugin />
 
-        {isRichText ? (
-          <>
             {isCollab ? (
               <CollaborationPlugin
                 id="main"
@@ -159,12 +158,13 @@ export default function Editor2(): JSX.Element {
             <RichTextPlugin
               contentEditable={
                 <div className="editor-scroller">
-                  <div className="editor" ref={onRef}>
-                    <ContentEditable placeholder={placeholder} />
+                  <div className="editor" ref={onRef} onChange={(e) => console.log((e.target as HTMLInputElement).value)}>
+                    <ContentEditable placeholder={placeholder}/>
                   </div>
                 </div>
               }
               ErrorBoundary={LexicalErrorBoundary}
+
             />
             <ListPlugin />
             <CheckListPlugin />
@@ -195,27 +195,16 @@ export default function Editor2(): JSX.Element {
                 />
               </>
             )}
-          </>
-        ) : (
-          <>
-            <PlainTextPlugin
-              contentEditable={<ContentEditable placeholder={placeholder} />}
-              ErrorBoundary={LexicalErrorBoundary}
-            />
-            <HistoryPlugin externalHistoryState={historyState} />
-          </>
-        )}
+            
         {(isCharLimit || isCharLimitUtf8) && (
           <CharacterLimitPlugin
             charset={isCharLimit ? 'UTF-16' : 'UTF-8'}
             maxLength={5}
           />
         )}
-        {isAutocomplete && <AutocompletePlugin />}
-        <div>{showTableOfContents && <TableOfContentsPlugin />}</div>
-        {shouldUseLexicalContextMenu && <ContextMenuPlugin />}
+       <ContextMenuPlugin />
       </div>
-      <Button onClick={() => saveContent()}>Save</Button>
     </>
   );
-}
+
+});

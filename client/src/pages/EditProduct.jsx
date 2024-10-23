@@ -38,7 +38,9 @@ function EditProduct() {
   const [AddVar, setAddVar] = useState(false);
   const [openPop, setOpenPop] = useState(false)
   useEffect(() => {
-    getData();
+    if(productName){
+      getData();
+    }
   }, [productName]);
 
   async function getData() {

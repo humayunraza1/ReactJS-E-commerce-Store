@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useImperativeHandle, forwardRef,useState, useEffect } from 'react';
 import {$createLinkNode} from '@lexical/link';
 import {$createListItemNode, $createListNode} from '@lexical/list';
 import {LexicalComposer} from '@lexical/react/LexicalComposer';
@@ -15,6 +15,9 @@ import TestRecorderPlugin from './plugins/TestRecorderPlugin';
 import TypingPerfPlugin from './plugins/TypingPerfPlugin';
 import Settings2 from './Settings';
 import PlaygroundEditorTheme from '../themes/PlaygroundEditorTheme';
+import Button from "./ui/Button2";
+import ExampleTheme from './ExampleTheme';
+import CustomOnChange from './plugins/CustomOnChange';
 
 
 function $prepopulatedRichText() {
@@ -97,8 +100,13 @@ function $prepopulatedRichText() {
     }
   }
 
-function TestingEditor () {
+  interface TestingEditor {
+    value: string;
+    onChange: (value: string) => void;
+  }
 
+  export const TestingEditor: React.FC<TestingEditor> = React.memo(
+    function TestingEditor({ value, onChange}) {
     const {
         settings: {isCollab, emptyEditor, measureTypingPerf},
       } = useSettings();
@@ -114,7 +122,7 @@ function TestingEditor () {
         onError: (error: Error) => {
           throw error;
         },
-        theme: PlaygroundEditorTheme,
+        theme: ExampleTheme,
       };
 
 
@@ -125,13 +133,13 @@ function TestingEditor () {
         <TableContext>
           <SharedAutocompleteContext>
             <div className="editor-shell flex flex-col lg:w-[780px] md:w-[650px]">
-              <Editor2 />
+              <Editor2/>
             </div>
+            <CustomOnChange value={value} onChange={onChange} />
           </SharedAutocompleteContext>
         </TableContext>
       </SharedHistoryContext>
     </LexicalComposer>
   );
-};
+});
 
-export default TestingEditor;

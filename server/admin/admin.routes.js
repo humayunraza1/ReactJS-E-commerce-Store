@@ -1,5 +1,5 @@
 const express = require('express');
-const { adminDashboard, addItem,getOrders,addVariant,editCategories,updateStatus,handleDispute} = require('./admin.controller');
+const { adminDashboard, addItem,getOrders,returnNewSku,addVariant,editCategories,updateStatus,handleDispute} = require('./admin.controller');
 const {authenticate,verifyRoles} = require('../middleware/authenticate');
 const router = express.Router();
 

@@ -49,6 +49,7 @@ const itemSchema = new mongoose.Schema({
   itemID: { type: Number, unique: true, immutable: true }, 
   itemName: { type: String, required: true },
   itemDescription: { type: String, required: true },
+  itemSpecifications: String,
   thumbnail: { type: String },
   brand: { type: String, required: true, default: "No brand" },
   datePosted: { type: Date, default: Date.now, immutable: true },// Add price field here if it's a global price
