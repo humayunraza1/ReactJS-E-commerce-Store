@@ -28,12 +28,11 @@ import { toast } from "sonner";
 import useAuth from "../hooks/useAuth";
 import "./css/editor2.css";
 import {TestingEditor} from "./TestingEditor";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { v4 as uuidv4 } from 'uuid';
 let cats = [];
 
 function AddProduct() {
-  const { productName } = useParams();
   const [editingProd,setEditingProd] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [isSubmit, setIsSubmit] = useState(false);
@@ -59,19 +58,27 @@ function AddProduct() {
   const [Categories, setCategories] = useState([
     { key: "", label: "", children: [{ key: "", label: "" }] },
   ]);
-
+  const [searchParams, setSearchParams] = useSearchParams();
+  const adValue = searchParams.get('ad')
+  const prodValue = searchParams.get('prod')
 
 // Edit Product Code
 useEffect(() => {
-  if(!productName){
+
+  
+  if(adValue=='add-product'){
     console.log("Adding New Product")
     setEditingProd(false);
-  }else{
+  }else if(adValue == 'edit-product'){
     setEditingProd(true);
-    getItemData();
-    console.log(productName)
+    if(prodValue){
+      getItemData();
+    }else{
+      toast.error("Invalid product selected.")
+      setSearchParams({ad:'products'})
+    }
   }
-}, [productName]);
+}, [adValue,prodValue]);
 
 async function getItemData() {
   setLoading(true);
@@ -79,7 +86,7 @@ async function getItemData() {
   try{
     const item = await axios.post(
       "/users/getItem",
-      { url: productName },
+      { url: prodValue },
       {
         headers: {
           "Content-Type": "application/json",
@@ -537,6 +544,7 @@ function generateUniqueSKU() {
       );
       console.log(data.data.message);
       toast.success(data.data.message);
+      setSearchParams({ad:'products'})
       setIsSubmit(false);
     } catch (err) {
       toast.error(err.response.data.message);
@@ -565,6 +573,7 @@ function generateUniqueSKU() {
       console.log(response.data)
       toast.success('Changes Saved.')
       setIsSubmit(false);
+      setSearchParams({ad:'products'})
     }catch(err){
       console.log(err)
       toast.error(err.response.data.message)

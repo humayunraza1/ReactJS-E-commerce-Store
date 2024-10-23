@@ -10,7 +10,8 @@ function DashHome ({className}) {
 
   const {darkMode,isLoading,user,setUser} = useGeneral();
   const navigate = useNavigate();
-
+  const {auth} = useAuth();
+  const url = auth?.user?.role == "Admin" ? '/dashboard?ad=settings':'/dashboard?tab=settings'
   return (
     <div className={className}>
     { isLoading ? <h1>Loading....</h1> :
@@ -25,7 +26,7 @@ function DashHome ({className}) {
         <div>
         <h2 className="text-lg">{user.name}</h2>
         <p className="text-md">{user.email}</p>
-        <Button type="primary" ghost className="mt-3" onClick={()=>{navigate('/dashboard?tab=settings')}}>Edit</Button>
+        <Button type="primary" ghost className="mt-3" onClick={()=>{navigate(url)}}>Edit</Button>
         </div>
       </div>
        {/* Add Numerical Data Here */}

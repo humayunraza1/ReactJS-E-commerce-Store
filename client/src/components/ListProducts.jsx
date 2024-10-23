@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog"
+import { useSearchParams } from "react-router-dom";
 let data =[];
 
 
@@ -19,11 +20,10 @@ function ListProducts () {
     const [Open,setOpen] = useState(false);
     const [Loading,setLoading] = useState(false);
     const [Selected,setSelected] = useState({});
-    
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const handleOpenInNewTab = (url) => {
-      const newPath = `/edit/${url}`;  // The internal route you want to open
-      window.open(newPath, '_blank', 'noopener,noreferrer');
+      setSearchParams({ad:'edit-product',prod:url})
     };
     const handleAddNew = (url) => {
       const newPath = `/product/new`;  // The internal route you want to open

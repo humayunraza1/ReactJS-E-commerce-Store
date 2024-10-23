@@ -9,11 +9,9 @@ import NotFound from "./pages/NotFound";
 import Layout from "./components/Layout";
 import RequireAuth from "./components/RequireAuth";
 import Unauthorized from "./pages/Unauthorized";
-import AdminDashboard from "./pages/AdminDashboard";
 import PersistLogin from "./components/PersistLogin";
 import Order from "./pages/Order";
 import Products from "./pages/Products";
-import EditProduct from "./pages/EditProduct";
 import AddNew from "./pages/AddNew";
 import AddProduct from "./components/AddProduct";
 function App() {

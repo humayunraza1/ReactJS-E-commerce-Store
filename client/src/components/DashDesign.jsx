@@ -56,7 +56,7 @@ const DashDesign = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const userTabValues = ['settings','order-history','disputes'] 
-  const adminTabValues = ['settings','products','orders','vouchers','users','disputes','add-product'] 
+  const adminTabValues = ['settings','products','orders','vouchers','users','disputes','add-product','edit-product'] 
 
   useEffect(()=>{
     if(auth?.user?.role == "User"){
@@ -90,9 +90,10 @@ const DashDesign = () => {
       if(tabValue == 'products'){
         setCurrent('20')
       }
-      if(tabValue == 'add-product'){
+      if(tabValue == 'add-product' || tabValue == 'edit-product'){
         setCurrent('21')
       }
+
       if(tabValue == 'orders'){
         setCurrent('50')
       }
@@ -117,10 +118,12 @@ const DashDesign = () => {
       navigate('/dashboard')
     }
     if(e.key == 1){
-      setSearchParams({tab:'settings'})
       if(auth?.user?.role == "Admin"){
         setSearchParams({ad:'settings'})
+      }else{
+        setSearchParams({tab:'settings'})
       }
+      
     }
     if(e.key == 2){
       setSearchParams({tab:'order-history'})
