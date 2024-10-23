@@ -30,7 +30,6 @@ import "./css/editor2.css";
 import {TestingEditor} from "./TestingEditor";
 import { useParams } from "react-router-dom";
 import { v4 as uuidv4 } from 'uuid';
-
 let cats = [];
 
 function AddProduct() {
@@ -271,6 +270,7 @@ function generateUniqueSKU() {
     }
   };
 
+  
   const checkForChanges = (oldVariants, newVariants) => {
     if (oldVariants.length !== newVariants.length) {
       return true; // If the number of variants has changed
@@ -295,11 +295,20 @@ function generateUniqueSKU() {
   
     return false; // Return false if no differences found
   };
-  
+
   const handleCancel = () => {
     const hasChanges = checkForChanges(Item.variants, Variants); // Compare arrays
-  
-    if (hasChanges) {
+    const hasMainChanges = 
+    prodName !== Item.itemName ||
+    prodDesc !== Item.itemDescription ||
+    prodThumbnail !== Item.thumbnail ||
+    itemCategory.Type !== Item.type ||
+    itemCategory.Category !== Item.category ||
+    prodBrand !== Item.brand;
+
+    console.log(value)
+    console.log(Item.itemSpecifications)
+    if (hasChanges || hasMainChanges) {
       if (window.confirm("You have unsaved changes. Do you really want to cancel?")) {
         // Logic to cancel changes
         console.log("Changes canceled.");
@@ -502,7 +511,7 @@ function generateUniqueSKU() {
 
   async function onSubmit() {
     setIsSubmit(true);
-    console.log(Item.variants);
+    console.log(Item);
     if(!editingProd){
       
     try {
@@ -535,20 +544,33 @@ function generateUniqueSKU() {
     }
  
   }else{
-    console.log(Variants);
-  }
-  setIsSubmit(false);
-    const prodDetails = {
-      itemName: prodName,
-      description: prodDesc,
-      specifications: value,
-      url: newURL,
-      thumbnail: prodThumbnail,
-      variants: Variants,
-      type: itemCategory.Type,
-      brand:prodBrand,
-      category: itemCategory.Category,
-    };
+    try{
+      const response = await axiosPrivate.put('/admin/updateItem', {
+        itemName: prodName,
+        itemID:Item.itemID,
+        description: prodDesc,
+        specifications: value,
+        url: newURL,
+        thumbnail: prodThumbnail,
+        variants: Variants,
+        brand:prodBrand,
+        type: itemCategory.Type,
+        category: itemCategory.Category,
+      }, {
+        headers: {
+          Authorization: auth.token,
+          "Content-Type": "application/json",
+        },
+      })
+      console.log(response.data)
+      toast.success('Changes Saved.')
+      setIsSubmit(false);
+    }catch(err){
+      console.log(err)
+      toast.error(err.response.data.message)
+      setIsSubmit(false);
+    }
+    }
    
   }
 

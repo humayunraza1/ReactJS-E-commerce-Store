@@ -152,6 +152,83 @@ const addItem = async (req, res) => {
   };
   
 
+  const updateItem = async (req, res) => {
+    try {
+      const { userID } = req.user;
+      const user = await User.findOne({ userID });
+  
+      // Check if the user has the 'Admin' role
+      if (user.role === 'User') {
+        return res.status(401).send({ message: "Unauthorized. Redirecting to user dashboard.", url: "/user/dashboard" });
+      }
+  
+      const { itemID, itemName, description, specifications, url, brand, thumbnail, variants, type, category } = req.body;
+  
+      // Check if the item to be updated exists
+      const existingItem = await Item.findOne({ itemID });
+      if (!existingItem) {
+        return res.status(404).send({ message: "Item not found." });
+      }
+  
+      // Check if the product with the same name already exists, excluding the current item
+      const duplicateItem = await Item.findOne({ itemName, itemID: { $ne: existingItem.itemID } });
+      if (duplicateItem) {
+        return res.status(400).send({ message: "Product with this name already exists." });
+      }
+  
+      // Check if the URL is unique, excluding the current item
+      const existingURL = await Item.findOne({ url, itemID: { $ne: existingItem.itemID } });
+      if (existingURL) {
+        return res.status(400).send({ message: "URL already exists." });
+      }
+  
+      // Validate the URL format: only alphanumeric characters and hyphens allowed
+      const urlRegex = /^[a-zA-Z0-9-]+$/;
+      if (!urlRegex.test(url)) {
+        return res.status(400).send({ message: "URL can only contain alphanumeric characters and hyphens." });
+      }
+  
+      // Process the variants to ensure they are unique
+      const variantNames = new Set();
+      const finalVariants = [];
+  
+      for (const item of variants) {
+        if (variantNames.has(item.Variant)) {
+          return res.status(400).send({ message: `Variant "${item.Variant}" must be unique.` });
+        }
+        variantNames.add(item.Variant);
+  
+        finalVariants.push({ 
+          Variant: item.Variant, 
+          thumbnail: item.thumbnail,
+          SKU:item.SKU,
+          isAvailable: item.isAvailable, 
+          stock: parseInt(item.stock), 
+          price: parseFloat(item.price) 
+        });
+      }
+  
+      // Update the item in the database
+      existingItem.itemName = itemName;
+      existingItem.itemDescription = description;
+      existingItem.itemSpecifications = specifications;
+      existingItem.url = url;  // Pass the validated URL
+      existingItem.thumbnail = thumbnail;
+      existingItem.brand = brand;
+      existingItem.type = type;
+      existingItem.variants = finalVariants;
+      existingItem.category = category;
+  
+      await existingItem.save();
+  
+      return res.status(200).send({ message: "Item updated successfully", item: existingItem });
+  
+    } catch (error) {
+      return res.status(500).send({ message: "Unknown error occurred", error: error });
+    }
+  };
+  
+
 
 async function addVariant(req, res) {
     try {
@@ -201,4 +278,4 @@ async function addVariant(req, res) {
 }
 
 
-module.exports = {adminDashboard,addVariant,addItem,getOrders,updateStatus,handleDispute,editCategories};
+module.exports = {adminDashboard,addVariant,addItem,getOrders,updateStatus,updateItem,handleDispute,editCategories};
