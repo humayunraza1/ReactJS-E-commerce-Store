@@ -8,6 +8,8 @@ import {
   Popconfirm,
   message,
   Space,
+  Checkbox,
+  Tag,
 } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { Label } from "./ui/label";
@@ -107,6 +109,7 @@ async function getItemData() {
       thumbnail: variant.thumbnail || "",
       Variant: variant.Variant || "",
       stock: variant.stock || 0,
+      isOOS:variant.isOOS || false,
       SKU: variant.SKU || "TBA",
       price: variant.price || 0,
       isAvailable: variant.isAvailable || false
@@ -170,8 +173,18 @@ async function getItemData() {
           SKU: newSKU,
           [key]: value, // Update the Variant key as well
         };
+      } else if (key === "stock") {
+        // Ensure stock is a non-negative integer
+        const sanitizedStock = Math.max(0, Math.floor(value));
+  
+        // Update stock and set isOOS based on the stock value
+        updatedVariants[index] = {
+          ...variantToUpdate,
+          stock: sanitizedStock,
+          isOOS: sanitizedStock > 0 ? false : true, // Set isOOS based on sanitized stock
+        };
       } else {
-        // If the key is not "Variant", just update the key-value pair
+        // If the key is not "Variant" or "stock", just update the key-value pair
         updatedVariants[index] = {
           ...variantToUpdate,
           [key]: value,
@@ -181,6 +194,7 @@ async function getItemData() {
       return updatedVariants;
     });
   };
+  
   
   function handleClick({ key }) {
     setSelectedKey(key);
@@ -340,7 +354,7 @@ function generateUniqueSKU() {
       width: 60,
       fixed: "left",
       render: (text, record, index) => (
-        <div className="flex gap-2 items-center w-[96px]">
+        <div className={`flex items-center w-[96px]}`}>
           {text == "" ? (
             <div className="w-[60px] h-[60px] rounded-xl border-2 border-dashed border-slate-200">
               <p className="flex items-center justify-center text-slate-300 text-5xl">
@@ -421,6 +435,17 @@ function generateUniqueSKU() {
       ),
     },
     {
+      title: "Status",
+      width: 60,
+      dataIndex: "isOOS",
+      key: "isOOS",
+      render: (text, record, index) => (
+        <>
+        <Tag color={record.isOOS ? 'red':'green'}>{record.isOOS ? 'Sold Out':'In Stock'}</Tag>
+        </>
+      ),
+    },
+    {
       title: "Available",
       width: 60,
       dataIndex: "",
@@ -459,7 +484,6 @@ function generateUniqueSKU() {
   const validateImageUrl = () => {
     // Regular expression to check if the URL is valid
     const urlRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+.*)$/;
-
     // List of common image extensions
     const imageExtensions = [
       "jpg",
@@ -583,7 +607,6 @@ function generateUniqueSKU() {
    
   }
 
-
   return (
     <>
       <div className="flex flex-col gap-8">
@@ -687,6 +710,7 @@ function generateUniqueSKU() {
                 scroll={{ x: 1000, y: 300 }}
                 columns={columns}
                 dataSource={Variants}
+                rowClassName={(record,index)=>{ return record.isOOS ? 'bg-red-50':'' }}
               />
             </div>
           </div>

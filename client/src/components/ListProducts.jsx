@@ -103,6 +103,7 @@ const columns = [
 
 ]
 
+
 const varCol = [
   {
     title:'',
@@ -171,7 +172,7 @@ const varCol = [
             <Input id="Item Name" value={Selected.itemName} className="col-span-3" />
           </div>
           <div className="w-[460px]">
-            <Table virtual bordered scroll={{x:400}} pagination={false} columns={varCol} dataSource={Selected.children}/>
+            <Table bordered scroll={{x:400}} pagination={false} columns={varCol} dataSource={Selected.children}/>
           </div>
   </DialogContent>
 </Dialog>
