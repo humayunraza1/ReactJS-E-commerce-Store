@@ -50,8 +50,8 @@ function CartProducts () {
 {cart?.items?.map((item,index)=>{
   return (          <div key={index} className="p-4 relative">
     <div className="flex p-2 w-full items-center border-2 rounded-lg hover:bg-slate-50 justify-evenly">
-      <div className="h-[70px] w-[70px] rounded-xl ">
-      <img src={item.thumbnail}/>
+      <div className="h-[70px] flex items-center justify-center w-[70px] rounded-xl ">
+      <img className="h-[62px] w-[62px]" src={item.thumbnail}/>
       </div>
       <div className="flex flex-col text-sm">
           <p>{item.name}</p>

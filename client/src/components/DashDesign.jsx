@@ -18,6 +18,7 @@ import MobileTabs from './MobileTabs';
 import useAuth from '../hooks/useAuth';
 import ListProducts from './ListProducts';
 import AddProduct from './AddProduct';
+import AllOrders from './AllOrders';
 const { Header, Content, Footer, Sider } = Layout;
 function getItem(label, key, icon, children) {
   return {
@@ -240,6 +241,7 @@ const DashDesign = () => {
            {current == '27' && <Disputes/>}
            {current == '20' && <ListProducts/>}
            {current == '21' && <AddProduct/>}
+           {current == '50' && <AllOrders/>}
           </div>
         </Content>
         <Footer

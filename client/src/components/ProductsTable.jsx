@@ -70,7 +70,7 @@ const items = [
 function ProductsTable ({children}) {
 
 const [Products,setProducts] = useState([])
-const rowsPerPage = 4;
+const rowsPerPage = 7;
 const [startIndex,setStartIndex] = useState(0)
 const [endIndex,setEndIndex] = useState(rowsPerPage)
 const {darkMode} = useGeneral();
