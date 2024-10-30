@@ -162,6 +162,7 @@ const resetPassword = async (req, res) => {
     console.log(`User email: ${user.email}`); // Output the user's email
     
     res.cookie('user', user.email, {
+      secure:true,
       maxAge: 30000 // expires in 1 hour
     });
 
