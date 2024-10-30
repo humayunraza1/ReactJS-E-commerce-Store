@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-
+require('dotenv').config();
+const mongodbsrv = process.env.MONGO_DB_ATLAS;
 // Define a counter schema for auto-incrementing userID
 const counterSchema = new mongoose.Schema({
     _id: { type: String, required: true },
@@ -172,7 +173,7 @@ function formatDate(date) {
     return `${day}-${month}-${year}`;
 }
 
-mongoose.connect('mongodb+srv://humayunraza5:H1FVqj4nFDrRk9ds@cluster0.nkfc1zg.mongodb.net/')
+mongoose.connect(mongodbsrv)
 
 // Pre-save middleware to auto-increment userID
 userSchema.pre('save', async function(next) {
