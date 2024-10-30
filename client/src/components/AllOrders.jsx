@@ -3,6 +3,19 @@ import { Button, Input, Space, Table, Tag } from "antd";
 import React, { useEffect, useState } from "react"
 import { axiosPrivate } from "src/api/axios";
 import useAuth from "src/hooks/useAuth";
+import { MoreHorizontal } from "lucide-react"
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
+  } from "../components/ui/dropdown-menu"
+import { width } from "@mui/system";
+import { toast } from "sonner";
+import { Dialog } from "./ui/dialog";
 
 let ordersWithKey = []
 
@@ -88,7 +101,7 @@ const orderCol = [
           ],
           onFilter: (value, record) => record.status.indexOf(value) === 0,
         render: (text, record, index) => (
-            <Tag color={`${text == 'Pending' ? '#FFC107': text == 'Accepted' ? '#4CAF50' : text == 'Shipped' ? 'blue' : text == 'Delivered' ? 'dark green':'red'}`}>{text}</Tag>
+            <Tag color={`${text == 'Pending' ? '#FFC107': text == 'Accepted' ? '#4CAF50' : text == 'Shipped' ? '#42A5F5' : text == 'Delivered' ? '#388E3C':'#E53935'}`}>{text}</Tag>
         ),
       },
       {
@@ -104,7 +117,7 @@ const orderCol = [
     },
     {
         title: "No. Of Items",
-        dataIndex: "cart[0].items",
+        dataIndex: "cart",
         key: "Cart",
         width: 100,
         render: (text, record, index) => (
@@ -130,7 +143,45 @@ const orderCol = [
             }
         ,
       },
+      {
+        title:'',
+        key: "actions",
+        width:40,
+        fixed:"right",
+        dataIndex:'orderID',
+        render: (text,record,index) => {
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Update Status</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem key="Accepted" onSelect={()=>updateStatus(text,"Accepted")}>Accept</DropdownMenuItem>
+                <DropdownMenuItem key="Cancel" onSelect={()=>updateStatus(text,"Cancelled")}>Cancel</DropdownMenuItem>
+                <DropdownMenuItem key="Shipped" onSelect={()=>updateStatus(text,"Shipped")}>Shipped</DropdownMenuItem>
+                <DropdownMenuItem key="Delivered" onSelect={()=>updateStatus(text,"Delivered")}>Delivered</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )
+        }
+      }
 ]
+
+async function updateStatus(orderID,status){
+    try{
+        const response = await axiosPrivate.post('/admin/updatestatus', {orderID,updateStatus:status}, {headers:{'Authorization':auth.token,'Content-Type':'application/json'}})
+        toast(response.data.msg)
+        setOrders(response.data.orders.reverse())
+    }catch(err){
+        console.log(err)
+    }
+}
+
 
 const expandCol = [
     {
@@ -224,7 +275,12 @@ const expandCol = [
                 render:(text,record,index) => {
                     return <div>
                         {
-                            text[0].items.map((item)=> {return <p>{item.cost}Rs</p> })
+                            text[0].items.map((item)=> {
+                                const formatted = new Intl.NumberFormat("en-US", {
+                                    style: "currency",
+                                    currency: "PKR"
+                                  }).format(item.cost)
+                                return <p>{formatted}</p> })
                         }
                     </div>
                 }

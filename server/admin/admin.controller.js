@@ -75,7 +75,8 @@ async function updateStatus(req,res){
     }
     order.status = updateStatus;
     await order.save()
-    return res.status(200).send({order: `Order ${orderID} status updated to ${order.status}`})
+    const updatedOrders = await Order.find();
+    return res.status(200).send({msg: `Order status updated.`,orders:updatedOrders})
 }
 
 
