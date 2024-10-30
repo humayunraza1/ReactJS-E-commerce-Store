@@ -6,7 +6,7 @@ const adminRoutes = require('../server/admin/admin.routes')
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 // Use CORS with specific origin
-const allowedOrigins= ['https://react-js-e-commerce-store-client.vercel.app','http://localhost:5000'];
+const allowedOrigins= ['https://react-js-e-commerce-store-client.vercel.app/','http://localhost:5000'];
 app.use(cors({
   origin: allowedOrigins, // Replace with your client URL
   credentials: true // If you need to include cookies in the requests
