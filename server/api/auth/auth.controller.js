@@ -26,9 +26,7 @@ const refreshToken = generateRefreshToken(userInfo)
 user.refreshToken = refreshToken;
 await user.save();
 res.cookie('refreshToken', refreshToken, {
-  httpOnly: true,
-  secure: true,
-  sameSite: 'None', // Required for cross-site cookies
+  secure: false,
   maxAge: 1000 * 60 * 60 * 24 * 3 // expires in 3 days
 });
 return res.status(200).send({token:token, user:userInfo, msg:"Logged In Successfuly"})
@@ -87,9 +85,6 @@ const loginUser = async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save();
     res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'None', // Required for cross-site cookies
       maxAge: 1000 * 60 * 60 * 24 * 3 // expires in 3 days
     });
     return res.status(201).send({message:"Loggedin Successfuly", user:userInfo, token:token});
@@ -167,7 +162,6 @@ const resetPassword = async (req, res) => {
     console.log(`User email: ${user.email}`); // Output the user's email
     
     res.cookie('user', user.email, {
-      httpOnly: true,
       maxAge: 30000 // expires in 1 hour
     });
 

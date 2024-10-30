@@ -6,7 +6,10 @@ const adminRoutes = require('../server/admin/admin.routes')
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 // Use CORS with specific origin
-app.use(cors());
+app.use(cors({
+  origin: 'https://react-js-e-commerce-store-server.vercel.app', // Replace with your client URL
+  credentials: false // If you need to include cookies in the requests
+}));
 
 app.use(express.json());
 app.use(cookieParser());
