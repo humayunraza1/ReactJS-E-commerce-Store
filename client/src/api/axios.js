@@ -1,5 +1,5 @@
 import axios from "axios";
-const BASE_URL = 'react-js-e-commerce-store-client.vercel.app'
+const BASE_URL = 'react-js-e-commerce-store-server-iug532pe7.vercel.app'
 
 export default axios.create({
     baseURL: BASE_URL
