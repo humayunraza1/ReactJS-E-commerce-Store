@@ -7,7 +7,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 // Use CORS with specific origin
 app.use(cors({
-  origin: 'https://react-js-e-commerce-store-server.vercel.app', // Replace with your client URL
+  origin: 'https://react-js-e-commerce-store-server.vercel.app/', // Replace with your client URL
   credentials: true // If you need to include cookies in the requests
 }));
 
