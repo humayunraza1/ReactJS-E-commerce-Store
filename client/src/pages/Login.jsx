@@ -85,7 +85,7 @@ function Login () {
             let name = user.given_name + ' ' +user.family_name; 
             const response = await axios.post('/api/auth/google', { email:user.email, id:user.id,name:name}, 
                 {   
-                    headers:{'Content-Type':'application/json'}
+                    headers:{'Content-Type':'application/json'},withCredentials:true
                     })
                     console.log(response.data);
                     const accessToken = response?.data?.token
