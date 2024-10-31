@@ -14,11 +14,10 @@ const allowedOrigins = ['https://react-js-e-commerce-store-client.vercel.app'];
 app.use(
   cors({
     origin: allowedOrigins,
-    methods: 'GET,POST,PUT,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Authorization',
     credentials:true
   })
 );
+
 app.use('/api/auth', authRoutes);
 app.use('/users',  userRoutes);
 app.use('/admin',  adminRoutes);
