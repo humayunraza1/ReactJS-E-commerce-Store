@@ -7,7 +7,7 @@ function OrderHistory () {
   async function getOrders(){
     try{
 
-      const response = await axiosPrivate.get('/admin/orders',{headers:{'Authorization':auth.token, 'Content-Type':'application/json'}});
+      const response = await axiosPrivate.get('/admin/orders',{headers:{'Authorization':auth.token, 'Content-Type':'application/json'},withCredentials:true});
       console.log(response.data)
     }catch(err){
       console.log(err)

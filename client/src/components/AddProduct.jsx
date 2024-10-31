@@ -93,6 +93,7 @@ async function getItemData() {
         headers: {
           "Content-Type": "application/json",
         },
+        withCredentials:true
       }
     );
     setLoading(false);
@@ -129,8 +130,7 @@ async function getItemData() {
     setLoading(true);
     try {
       const categories = await axios.get("/users/categories", {
-        headers: { "Content-Type": "application/json" },
-      });
+        headers: { "Content-Type": "application/json" },withCredentials:true});
 
       cats = categories.data.category.map((category, idx) => ({
         key: `${idx}`,
@@ -564,6 +564,7 @@ function generateUniqueSKU() {
             Authorization: auth.token,
             "Content-Type": "application/json",
           },
+          withCredentials:true
         }
       );
       console.log(data.data.message);
@@ -593,6 +594,7 @@ function generateUniqueSKU() {
           Authorization: auth.token,
           "Content-Type": "application/json",
         },
+        withCredentials:true
       })
       console.log(response.data)
       toast.success('Changes Saved.')

@@ -50,7 +50,8 @@ function Login () {
                         headers: {
                             Authorization: `Bearer ${codeResponse.access_token}`,
                             Accept: 'application/json'
-                        }
+                        },
+                        withCredentials:true
                     })
                     .then((res) => {
                         console.log(res.data);

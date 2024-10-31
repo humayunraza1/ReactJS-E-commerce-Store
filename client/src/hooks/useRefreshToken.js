@@ -45,7 +45,8 @@ function useRefreshToken () {
               headers:{
                 'Authorization':response.data.newToken,
                 'Content-Type': 'application/json'
-              }
+              },
+              withCredentials:true
             })
             setCart(getCart.data.cart)
             console.log(getCart.data.cart);

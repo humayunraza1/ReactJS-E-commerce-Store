@@ -36,7 +36,8 @@ function ListProducts () {
             const response = await axiosPrivate.get('/users/products',{
                 headers:{
                     'Content-Type':'application/json'
-                }
+                },
+                withCredentials:true
             });
             const ldata = response.data.products;
             data = ldata?.flatMap((prod, index) =>

@@ -65,7 +65,8 @@ export default function Navbar() {
         headers:{
           'Authorization':auth.token,
           'Content-Type':'application/json'
-        }
+        },
+        withCredentials:true
       })
       console.log(response.data);
       if(response.data.items == []){
@@ -84,7 +85,8 @@ async function getCart(){
       headers:{
         'Authorization':auth.token,
         'Content-Type': 'application/json'
-      }
+      },
+      withCredentials:true
     })
     setCart(response.data.cart)
     console.log(response.data.cart);
@@ -98,7 +100,7 @@ async function getCart(){
 
 async function getDetails(){
   try{
-    const response = await axiosPrivate.get('/users/dashboard',{
+    const response = await axiosPrivate.get('/users/dashboard',{withCredentials:true},{
       headers:{'Content-Type': 'application/json',
       'Authorization' : auth.token
     },

@@ -180,7 +180,8 @@ export function DataTableDemo() {
         headers:{
             'Authorization':auth.token,
             'Content-Type':'application/json'
-        }
+        },
+        withCredentials:true
     })
     data=response.data.wishlist.items;
     setWishlist(data)

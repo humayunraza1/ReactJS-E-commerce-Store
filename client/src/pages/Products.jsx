@@ -42,7 +42,8 @@ function Products () {
     async function getItem(){
       const item = await axios.post('/users/getItem',{url},{headers:{
         'Content-Type':'application/json',
-      }
+      },
+      withCredentials:true
       })
       setItem(item.data.item[0])
       setVar(item.data.item[0].variants.find(v=> v.Variant.toLowerCase() === variant));

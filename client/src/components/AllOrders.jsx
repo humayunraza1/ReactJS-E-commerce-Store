@@ -30,7 +30,7 @@ function AllOrders () {
     setLoading(true);
     try{
 
-        const response = await axiosPrivate.get('/admin/orders',{headers:{'Authorization':auth.token, 'Content-Type':'application/json'}});
+        const response = await axiosPrivate.get('/admin/orders',{headers:{'Authorization':auth.token, 'Content-Type':'application/json'},withCredentials:true});
         console.log(response.data.orders)
         ordersWithKey = response.data.orders.map((order, index) => ({
             ...order,    // Spread the original order properties
@@ -174,7 +174,7 @@ const orderCol = [
 
 async function updateStatus(orderID,status){
     try{
-        const response = await axiosPrivate.post('/admin/updatestatus', {orderID,updateStatus:status}, {headers:{'Authorization':auth.token,'Content-Type':'application/json'}})
+        const response = await axiosPrivate.post('/admin/updatestatus', {orderID,updateStatus:status}, {headers:{'Authorization':auth.token,'Content-Type':'application/json'},withCredentials:true})
         toast(response.data.msg)
         setOrders(response.data.orders.reverse())
     }catch(err){

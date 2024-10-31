@@ -12,7 +12,8 @@
       "headers": {
         "Access-Control-Allow-Origin": "https://react-js-e-commerce-store-client.vercel.app",
         "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Credentials": "true"
       },
       "dest": "/auth.routes.js"
     },
@@ -21,7 +22,8 @@
       "headers": {
         "Access-Control-Allow-Origin": "https://react-js-e-commerce-store-client.vercel.app",
         "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Credentials": "true"
       },
       "dest": "/user.routes.js"
     },
@@ -30,7 +32,8 @@
       "headers": {
         "Access-Control-Allow-Origin": "https://react-js-e-commerce-store-client.vercel.app",
         "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization"
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Credentials": "true"
       },
       "dest": "/admin.routes.js"
     },

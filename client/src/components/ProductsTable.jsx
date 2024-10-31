@@ -86,7 +86,8 @@ const onChange = (pageNumber) => {
     const response = await axiosPrivate.get('/users/products',{
       headers:{
         'Content-Type':'application/json'
-      }
+      },
+      withCredentials:true
     });
     const data = response.data.products;
     setProducts(data.flatMap((prod, index) => 
@@ -112,7 +113,7 @@ const onChange = (pageNumber) => {
   async function getCategories(){
     try{
       
-      const response = await axios.get('/users/categories',{headers:{'Content-Type':'application/json'}});
+      const response = await axios.get('/users/categories',{headers:{'Content-Type':'application/json'},withCredentials:true});
       const {category} = response.data;
       setCateg(response.data.category)
     }catch(err){
