@@ -9,24 +9,14 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://react-js-e-commerce-store-client.vercel.app",
-
-      },
       "dest": "/auth.routes.js"
     },
     {
       "src": "/user/(.*)",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://react-js-e-commerce-store-client.vercel.app",
-      },
       "dest": "/user.routes.js"
     },
     {
       "src": "/admin/(.*)",
-      "headers": {
-        "Access-Control-Allow-Origin": "https://react-js-e-commerce-store-client.vercel.app",
-      },
       "dest": "/admin.routes.js"
     },
     {
