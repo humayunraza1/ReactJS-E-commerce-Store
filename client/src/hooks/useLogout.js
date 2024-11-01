@@ -1,5 +1,5 @@
 import axios from "../api/axios";
-import useAuth from "./useAuth";
+import useAuth from "./useAuth2";
 import useGeneral from "./useGeneral";
 
 

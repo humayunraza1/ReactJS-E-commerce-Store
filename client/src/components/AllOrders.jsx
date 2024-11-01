@@ -2,7 +2,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import { Button, Input, Space, Table, Tag } from "antd";
 import React, { useEffect, useState } from "react"
 import { axiosPrivate } from "src/api/axios";
-import useAuth from "src/hooks/useAuth";
+import useAuth from "src/hooks/useAuth2";
 import { MoreHorizontal } from "lucide-react"
 import {
     DropdownMenu,

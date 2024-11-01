@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth2";
 import useGeneral from "../hooks/useGeneral";
 import { Button } from "../components/ui/button"
 import { jwtDecode } from "jwt-decode";
@@ -20,6 +20,7 @@ import Autoplay from "embla-carousel-autoplay"
 import { GoogleLogin, useGoogleLogin } from '@react-oauth/google';
 import DarkSwitch from "../components/DarkSwitch";
 import axios from "../api/axios";
+import ClerkSign from "src/components/ClerkSign";
 
 export function Example() {
   return (
@@ -128,7 +129,7 @@ function Login () {
     
     return (
         <>
-        <div className={`flex justify-center items-center w-screen h-screen ${darkMode ? 'bg-[#0a1018]':'bg-white'}`}>
+        {/* <div className={`flex justify-center items-center w-screen h-screen ${darkMode ? 'bg-[#0a1018]':'bg-white'}`}>
             <div className={`${darkMode && "bg-black"} card shadow-2xl w-[800px] h-96 rounded-2xl border-black flex`}>
                 <div className="w-[50%] p-8 rounded-l-2xl flex justify-center">
                 <div className={`w-[250px]`}>
@@ -196,7 +197,8 @@ function Login () {
                 </div>
                 </div>
             </div>
-        </div>
+        </div> */}
+        <ClerkSign/>
         </>
     );
 };

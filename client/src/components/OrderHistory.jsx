@@ -1,6 +1,6 @@
 import React, { useEffect } from "react"
 import { axiosPrivate } from "src/api/axios";
-import useAuth from "src/hooks/useAuth";
+import useAuth from "src/hooks/useAuth2";
 
 function OrderHistory () {
   const {auth} = useAuth();

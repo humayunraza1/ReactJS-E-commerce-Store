@@ -3,7 +3,7 @@ import { Avatar, Button, List, Skeleton, Tooltip} from 'antd';
 import useGeneral from '../hooks/useGeneral';
 import CustomModal from './CustomModal';
 import axios from '../api/axios';
-import useAuth from '../hooks/useAuth';
+import useAuth from '../hooks/useAuth2';
 import { Input } from './ui/input';
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group"
 import { toast } from 'sonner';

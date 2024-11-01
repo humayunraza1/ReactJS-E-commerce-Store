@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useNavigate } from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Store from "./pages/Store";
@@ -14,14 +14,31 @@ import Order from "./pages/Order";
 import Products from "./pages/Products";
 import AddNew from "./pages/AddNew";
 import AddProduct from "./components/AddProduct";
+import { ClerkProvider, SignIn, SignUp } from '@clerk/clerk-react'
+
+
+const PUBLISHABLE_KEY = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error('Add your Clerk publishable key to the .env.local file')
+}
+
+const ClerkWithRoutes = ({children}) => {
+  const navigate = useNavigate();
+  return <ClerkProvider publishableKey={PUBLISHABLE_KEY} navigate={(to)=>navigate(to)}>
+      {children}
+  </ClerkProvider>
+}
+
 function App() {
   const { auth } = useContext(AuthContext);
   return (
+    <ClerkWithRoutes>
     <Routes>
       <Route path="/" element={<Layout />}>
         {/* Public Routes */}
-        <Route path="register" element={<Register />} />
-        <Route path="login" element={<Login />} />
+        <Route path="register" element={<SignUp />} />
+        <Route path="login" element={<SignIn  />} />
         <Route path="unauthorized" element={<Unauthorized />} />
 
         {/* Catch All */}
@@ -40,6 +57,7 @@ function App() {
         </Route>
       </Route>
     </Routes>
+    </ClerkWithRoutes>
   );
 }
 

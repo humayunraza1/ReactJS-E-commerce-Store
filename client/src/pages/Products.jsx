@@ -15,7 +15,7 @@ import {
   MinusOutlined,
   DeleteOutlined
 } from '@ant-design/icons';
-import useAuth from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth2";
 
 function Products () {
   const { productName } = useParams();

@@ -8,7 +8,6 @@ const cookieParser = require('cookie-parser');
 // Use CORS with specific origin
 app.use(express.json());
 app.use(cookieParser());
-
 const allowedOrigins = ['https://react-js-e-commerce-store-client.vercel.app'];
 
 app.use(

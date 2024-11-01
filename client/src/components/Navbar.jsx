@@ -24,13 +24,16 @@ import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/react/20/
 import DarkSwitch from './DarkSwitch'
 import useGeneral from '../hooks/useGeneral'
 import { axiosPrivate } from '../api/axios'
-import useAuth from '../hooks/useAuth'
+import useAuth2 from '../hooks/useAuth2'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import useLogout from '../hooks/useLogout'
 import useAxiosPrivate from '../hooks/useAxiosPrivate'
 import AvatarComp from './Avatar'
 import CustomPopOver from './CustomPopOver'
 import Cart from './Cart'
+import ClerkSign from './ClerkSign'
+import { SignedOut, useAuth, useClerk, UserButton, useUser } from '@clerk/clerk-react'
+import Button from './ui/Button2'
 
 const products = [
   { name: 'Analytics', description: 'Get a better understanding of your traffic', href: '#', icon: ChartPieIcon },
@@ -50,12 +53,13 @@ function classNames(...classes) {
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const {userId,orgRole,orgSlug} = useAuth();
   const location = useLocation();
   const logout = useLogout();
   const axiosPrivate = useAxiosPrivate();
   
     const {darkMode,isLoggedIn,setWishlist,setUser,setCart} = useGeneral();
-    const {auth,setAuth} = useAuth(); 
+    const {auth,setAuth} = useAuth2(); 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [details, setDetails] = useState({Name:"",Email:"" ,Role:""})
   async function getwishlist(){
@@ -122,12 +126,11 @@ async function signout(){
   navigate('/');
 }
 useEffect(()=>{
-  if(auth.token !== ""){
+
   getDetails()
   getwishlist()
   getCart()
-  }
-},[auth])
+},[])
 
 
   return (
@@ -272,17 +275,18 @@ useEffect(()=>{
                         </a>
                       </div>
                     </div>
-                
-                
+              
                 </div>
           </PopoverPanel>
 
         </Transition>
 
       </Popover>
-    </PopoverGroup></div>   :         <a onClick={()=>navigate('/login')} className="text-sm font-semibold leading-6">
+    </PopoverGroup></div>   :      <>
+       <a onClick={()=>navigate('/login')} className="text-sm font-semibold leading-6">
             Log in <span aria-hidden="true">&rarr;</span>
           </a>
+    </>
           }
         </div>
         

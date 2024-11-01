@@ -15,7 +15,7 @@ import DarkSwitch from './DarkSwitch';
 import useGeneral from '../hooks/useGeneral';
 import DashHome from './DashHome';
 import MobileTabs from './MobileTabs';
-import useAuth from '../hooks/useAuth';
+import useAuth from '../hooks/useAuth2';
 import ListProducts from './ListProducts';
 import AddProduct from './AddProduct';
 import AllOrders from './AllOrders';

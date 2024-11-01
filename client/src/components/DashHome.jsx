@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react"
 import { axiosPrivate } from "../api/axios";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../hooks/useAuth2";
 import useGeneral from '../hooks/useGeneral';
 import { Avatar, Button } from "antd";
 import { DataTableDemo } from "./Wishlist";

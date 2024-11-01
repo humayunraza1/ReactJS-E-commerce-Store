@@ -26,7 +26,9 @@ const refreshToken = generateRefreshToken(userInfo)
 user.refreshToken = refreshToken;
 await user.save();
 res.cookie('refreshToken', refreshToken, {
-  secure: false,
+  secure: true, // Ensures the cookie is sent over HTTPS only
+  httpOnly: true, // Prevents client-side JS from accessing the cookie
+  sameSite: 'none', // Allows cross-site cookie sharing
   maxAge: 1000 * 60 * 60 * 24 * 3 // expires in 3 days
 });
 return res.status(200).send({token:token, user:userInfo, msg:"Logged In Successfuly"})
@@ -85,7 +87,10 @@ const loginUser = async (req, res) => {
     user.refreshToken = refreshToken;
     await user.save();
     res.cookie('refreshToken', refreshToken, {
-      maxAge: 1000 * 60 * 60 * 24 * 3 // expires in 3 days
+      maxAge: 1000 * 60 * 60 * 24 * 3, // expires in 3 days
+      secure: true, // Ensures the cookie is sent over HTTPS only
+      httpOnly: true, // Prevents client-side JS from accessing the cookie
+      sameSite: 'none' // Allows cross-site cookie sharing
     });
     return res.status(201).send({message:"Loggedin Successfuly", user:userInfo, token:token});
   } catch (error) {
@@ -162,7 +167,9 @@ const resetPassword = async (req, res) => {
     console.log(`User email: ${user.email}`); // Output the user's email
     
     res.cookie('user', user.email, {
-      secure:true,
+      secure: true, // Ensures the cookie is sent over HTTPS only
+      httpOnly: true, // Prevents client-side JS from accessing the cookie
+      sameSite: 'none', // Allows cross-site cookie sharing
       maxAge: 30000 // expires in 1 hour
     });
 
