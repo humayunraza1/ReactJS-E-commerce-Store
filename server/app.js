@@ -13,6 +13,7 @@ const allowedOrigins = ['https://react-js-e-commerce-store-client.vercel.app'];
 app.use(
   cors({
     origin: allowedOrigins,
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials:true
   })
 );
