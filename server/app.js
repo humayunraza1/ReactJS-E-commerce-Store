@@ -19,6 +19,8 @@ app.use(
   })
 );
 
+app.options('*', cors());
+
 app.use('/api/auth', authRoutes);
 app.use('/users',  userRoutes);
 app.use('/admin',  adminRoutes);

@@ -107,7 +107,7 @@ function Login () {
         try{
             const response = await axios.post('/api/auth/login', { email:logindetails.email, password:logindetails.password }, 
             {   
-                headers:{'Content-Type':'application/json'},withCredentials:true
+                headers:{'Content-Type':'application/json'}
                 });
             const accessToken = response?.data?.token
             console.log(response.data.data)
