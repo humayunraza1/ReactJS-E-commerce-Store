@@ -10,7 +10,8 @@
     {
       "src": "/api/(.*)",
       "headers":{
-        "Access-Control-Allow-Origin": "https://react-js-e-commerce-store-client.vercel.app"
+        "Access-Control-Allow-Origin": "https://react-js-e-commerce-store-client.vercel.app",
+        "Access-Control-Allow-Credentials":true
       },
       "dest": "/auth.routes.js"
     },
