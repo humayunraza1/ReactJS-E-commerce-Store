@@ -89,7 +89,7 @@ const loginUser = async (req, res) => {
     res.cookie('refreshToken', refreshToken, {
       maxAge: 1000 * 60 * 60 * 24 * 3, // expires in 3 days
       secure: true, // Ensures the cookie is sent over HTTPS only
-      httpOnly: true, // Prevents client-side JS from accessing the cookie
+      httpOnly: false, // Prevents client-side JS from accessing the cookie
       sameSite: 'none' // Allows cross-site cookie sharing
     });
     return res.status(201).send({message:"Loggedin Successfuly", user:userInfo, token:token});
@@ -168,7 +168,7 @@ const resetPassword = async (req, res) => {
     
     res.cookie('user', user.email, {
       secure: true, // Ensures the cookie is sent over HTTPS only
-      httpOnly: true, // Prevents client-side JS from accessing the cookie
+      httpOnly: false, // Prevents client-side JS from accessing the cookie
       sameSite: 'none', // Allows cross-site cookie sharing
       maxAge: 30000 // expires in 1 hour
     });
@@ -216,9 +216,9 @@ async function handleLogout(req,res){
   const user = await User.findOne({refreshToken})
   if(!user){
     res.clearCookie('refreshToken',{
-      httpOnly: true,
+      httpOnly: false,
       sameSite: 'None', // Required for cross-site cookies
-      secure: false, // Set to true if using HTTPS
+      secure: true, // Set to true if using HTTPS
       maxAge: 604800000 // expires in 7 days
     });
     return res.sendStatus(204);
@@ -227,7 +227,7 @@ async function handleLogout(req,res){
   user.refreshToken = null;
   await user.save();
   res.clearCookie('refreshToken',{
-    httpOnly: true,
+    httpOnly: false,
     sameSite: 'None', // Required for cross-site cookies
     secure: true, // Set to true if using HTTPS
     maxAge: 1000 * 60 * 60 * 24 // expires in 1 day
