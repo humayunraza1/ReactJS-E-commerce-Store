@@ -9,6 +9,9 @@
   "routes": [
     {
       "src": "/api/(.*)",
+      "headers":{
+        "Access-Control-Allow-Origin": "https://react-js-e-commerce-store-client.vercel.app"
+      },
       "dest": "/auth.routes.js"
     },
     {
