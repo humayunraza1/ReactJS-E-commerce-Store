@@ -32,7 +32,7 @@ import AvatarComp from './Avatar'
 import CustomPopOver from './CustomPopOver'
 import Cart from './Cart'
 import ClerkSign from './ClerkSign'
-import { SignedOut, useAuth, useClerk, UserButton, useUser } from '@clerk/clerk-react'
+import { SignedOut, useClerk, UserButton, useUser } from '@clerk/clerk-react'
 import Button from './ui/Button2'
 
 const products = [
