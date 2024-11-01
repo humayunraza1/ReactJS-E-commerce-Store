@@ -129,7 +129,7 @@ function Login () {
     
     return (
         <>
-        {/* <div className={`flex justify-center items-center w-screen h-screen ${darkMode ? 'bg-[#0a1018]':'bg-white'}`}>
+        <div className={`flex justify-center items-center w-screen h-screen ${darkMode ? 'bg-[#0a1018]':'bg-white'}`}>
             <div className={`${darkMode && "bg-black"} card shadow-2xl w-[800px] h-96 rounded-2xl border-black flex`}>
                 <div className="w-[50%] p-8 rounded-l-2xl flex justify-center">
                 <div className={`w-[250px]`}>
@@ -197,8 +197,8 @@ function Login () {
                 </div>
                 </div>
             </div>
-        </div> */}
-        <ClerkSign/>
+        </div>
+        {/* <ClerkSign/> */}
         </>
     );
 };
