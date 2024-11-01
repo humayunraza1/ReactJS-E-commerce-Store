@@ -36,8 +36,8 @@ function App() {
     <Routes>
       <Route path="/" element={<Layout />}>
         {/* Public Routes */}
-        <Route path="register" element={<SignUp />} />
-        <Route path="login" element={<SignIn  />} />
+        <Route path="register" element={<Register />} />
+        <Route path="login" element={<Login  />} />
         <Route path="unauthorized" element={<Unauthorized />} />
 
         {/* Catch All */}
