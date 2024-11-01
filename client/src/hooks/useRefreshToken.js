@@ -1,5 +1,5 @@
 import axios, { axiosPrivate } from "../api/axios"
-import useAuth from "./useAuth2";
+import useAuth from "./useAuth";
 import useGeneral from "./useGeneral";
 function useRefreshToken () {
     const {setAuth} = useAuth();

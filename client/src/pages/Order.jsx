@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import useGeneral from "../hooks/useGeneral";
-import useAuth from "../hooks/useAuth2";
+import useAuth from "../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { ExclamationCircleOutlined,CheckCircleTwoTone,ExclamationCircleTwoTone } from '@ant-design/icons';
 import CartProducts from "../components/CarProducts";

@@ -31,7 +31,7 @@ import {
 } from "../components/ui/table"
 import useGeneral from "../hooks/useGeneral"
 import { axiosPrivate } from "../api/axios"
-import useAuth from "../hooks/useAuth2"
+import useAuth from "../hooks/useAuth"
 
 let data = []
 

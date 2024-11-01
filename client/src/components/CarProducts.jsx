@@ -2,7 +2,7 @@ import React from "react"
 import useGeneral from "../hooks/useGeneral";
 import axios from "../api/axios";
 import { Button, Tooltip } from "antd";
-import useAuth from "../hooks/useAuth2";
+import useAuth from "../hooks/useAuth";
 import {
     PlusOutlined,
     MinusOutlined,

@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom";
-import useAuth from "../hooks/useAuth2";
+import useAuth from "../hooks/useAuth";
 import useGeneral from "../hooks/useGeneral";
 import { Button } from "../components/ui/button"
 import { jwtDecode } from "jwt-decode";

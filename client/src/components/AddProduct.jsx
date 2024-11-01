@@ -27,7 +27,7 @@ import {
   FontColorsOutlined,
 } from "@ant-design/icons";
 import { toast } from "sonner";
-import useAuth from "../hooks/useAuth2";
+import useAuth from "../hooks/useAuth";
 import "./css/editor2.css";
 import {TestingEditor} from "./TestingEditor";
 import { useParams, useSearchParams } from "react-router-dom";

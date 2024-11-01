@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PlusOutlined,HeartOutlined,HeartFilled } from '@ant-design/icons';
 import { Avatar, Card, ConfigProvider } from 'antd';
 import useGeneral from '../hooks/useGeneral';
-import useAuth from '../hooks/useAuth2';
+import useAuth from '../hooks/useAuth';
 import { toast } from "sonner"
 import { axiosPrivate } from '../api/axios';
 import { Link } from 'react-router-dom';

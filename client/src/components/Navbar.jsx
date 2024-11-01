@@ -24,7 +24,7 @@ import { ChevronDownIcon, PhoneIcon, PlayCircleIcon } from '@heroicons/react/20/
 import DarkSwitch from './DarkSwitch'
 import useGeneral from '../hooks/useGeneral'
 import { axiosPrivate } from '../api/axios'
-import useAuth2 from '../hooks/useAuth2'
+import useAuth from '../hooks/useAuth'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import useLogout from '../hooks/useLogout'
 import useAxiosPrivate from '../hooks/useAxiosPrivate'
@@ -53,13 +53,12 @@ function classNames(...classes) {
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const {userId,orgRole,orgSlug} = useAuth();
   const location = useLocation();
   const logout = useLogout();
   const axiosPrivate = useAxiosPrivate();
   
     const {darkMode,isLoggedIn,setWishlist,setUser,setCart} = useGeneral();
-    const {auth,setAuth} = useAuth2(); 
+    const {auth,setAuth} = useAuth(); 
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [details, setDetails] = useState({Name:"",Email:"" ,Role:""})
   async function getwishlist(){
@@ -126,11 +125,12 @@ async function signout(){
   navigate('/');
 }
 useEffect(()=>{
-
+  if(auth.token !== ""){
   getDetails()
   getwishlist()
   getCart()
-},[])
+  }
+},[auth])
 
 
   return (
