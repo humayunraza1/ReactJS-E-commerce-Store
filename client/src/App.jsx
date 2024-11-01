@@ -33,7 +33,6 @@ const ClerkWithRoutes = ({children}) => {
 function App() {
   const { auth } = useContext(AuthContext);
   return (
-    <ClerkWithRoutes>
     <Routes>
       <Route path="/" element={<Layout />}>
         {/* Public Routes */}
@@ -57,7 +56,6 @@ function App() {
         </Route>
       </Route>
     </Routes>
-    </ClerkWithRoutes>
   );
 }
 
