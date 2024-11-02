@@ -11,6 +11,7 @@
       "src": "/api/(.*)",
       "headers":{
         "Access-Control-Allow-Origin": "https://react-js-e-commerce-store-client.vercel.app",
+        "Access-Control-Allow-Methods":"GET,HEAD,PUT,PATCH,POST,DELETE",
         "Access-Control-Allow-Credentials":"true"
       },
       "dest": "/auth.routes.js"

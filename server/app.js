@@ -9,17 +9,15 @@ const cookieParser = require('cookie-parser');
 app.use(express.json());
 app.use(cookieParser());
 const allowedOrigins = ['https://react-js-e-commerce-store-client.vercel.app'];
-
+const corsOptions = {
+  origin: allowedOrigins, // Replace with the domain you want to allow
+  credentials: true, // Allow credentials to be included in the request
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allow these HTTP methods
+  allowedHeaders: 'Content-Type,Authorization', // Allow these headers
+};
 app.use(
-  cors({
-    origin: allowedOrigins,
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    optionsSuccessStatus: 200,
-    credentials:true
-  })
+  cors(corsOptions)
 );
-
-app.options('*', cors());
 
 app.use('/api/auth', authRoutes);
 app.use('/users',  userRoutes);
