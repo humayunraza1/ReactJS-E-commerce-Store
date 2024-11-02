@@ -20,7 +20,9 @@ app.use(
 );
 
 // Handle preflight `OPTIONS` request for all routes
-app.options('*', cors(corsOptions));
+app.options('*', cors(corsOptions), (req,res)=>{
+  res.send("Cors is working")
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/users',  userRoutes);
