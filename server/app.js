@@ -19,6 +19,9 @@ app.use(
   cors(corsOptions)
 );
 
+// Handle preflight `OPTIONS` request for all routes
+app.options('*', cors(corsOptions));
+
 app.use('/api/auth', authRoutes);
 app.use('/users',  userRoutes);
 app.use('/admin',  adminRoutes);
