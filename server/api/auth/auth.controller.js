@@ -51,7 +51,7 @@ const handleRefreshToken = async (req, res) => {
                     // Update the user object with a new expiration time
                     decoded.exp = Math.floor(Date.now() / 1000) + 60 * 60 * 1; // 1h
                     const newToken = jwt.sign(decoded, process.env.JWT_SECRET);
-                    res.json({user:{userID:user.userID,role:user.role}, newToken})
+                    res.status(200).send({user:{userID:user.userID,role:user.role}, newToken})
                   });
 };
 
@@ -66,7 +66,7 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = new User({ name, email, password: hashedPassword, googleId:"null" });
     await user.save();
-    res.status(201).send('User registered successfully!');
+    res.status(200).send('User registered successfully!');
   } catch (error) {
     console.log(error)
     res.status(500).send('Error registering user!');
@@ -92,7 +92,7 @@ const loginUser = async (req, res) => {
       httpOnly: false, // Prevents client-side JS from accessing the cookie
       sameSite: 'none' // Allows cross-site cookie sharing
     });
-    return res.status(201).send({message:"Loggedin Successfuly", user:userInfo, token:token});
+    return res.status(200).send({message:"Loggedin Successfuly", user:userInfo, token:token});
   } catch (error) {
     console.log(error)
     return res.status(500).send('Error logging in user!');
