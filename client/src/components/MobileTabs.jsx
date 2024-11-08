@@ -56,7 +56,7 @@ const items = [
   {
     key: '20',
     label: 'Admin',
-    children: <Tabs animated activeKey={currTab} centered items={d1}/>,
+    children: <Tabs animated activeKey={currTab} centered items={d1} onChange={(e)=>setCurrTab(e)}/>,
   },
   {
     key: '4',
