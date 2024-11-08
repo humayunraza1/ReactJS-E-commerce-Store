@@ -44,7 +44,7 @@ const items = [
     children: 'Content of Tab Pane 2',
   },
   {
-    key: '3',
+    key: '20',
     label: 'Admin',
     children: <Tabs animated centered items={d1}/>,
   },
