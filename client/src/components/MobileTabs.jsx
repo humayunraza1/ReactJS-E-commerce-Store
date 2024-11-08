@@ -2,7 +2,7 @@ import React from 'react';
 import { Tabs } from 'antd';
 import DashHome from './DashHome';
 import Settings from './Settings';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import useAuth from 'src/hooks/useAuth';
 import AllOrders from './AllOrders';
 const onChange = (key) => {
@@ -58,6 +58,7 @@ const items = [
 
 function MobileTabs({current,setCurrent,setSearchParams,searchParams}) {
 const {auth} = useAuth();
+const navigate = useNavigate();
 return(
 <Tabs centered animated activeKey={current} defaultActiveKey={current} items={items} onChange={(e)=>{setCurrent(e)
 if(e == 0){
