@@ -27,7 +27,7 @@ user.refreshToken = refreshToken;
 await user.save();
 res.cookie('refreshToken', refreshToken, {
   secure: true, // Ensures the cookie is sent over HTTPS only
-  httpOnly: false, // Prevents client-side JS from accessing the cookie
+  httpOnly: true, // Prevents client-side JS from accessing the cookie
   sameSite: 'none', // Allows cross-site cookie sharing
   maxAge: 1000 * 60 * 60 * 24 * 3 // expires in 3 days
 });
@@ -36,6 +36,7 @@ return res.status(200).send({token:token, user:userInfo, msg:"Logged In Successf
 
 const handleRefreshToken = async (req, res) => {
   const cookies = req.cookies;
+  console.log("Cookies: ", cookies);
     if (!cookies?.refreshToken) {
       return res.status(401).send("No refresh token cookie found")
     }
@@ -168,7 +169,7 @@ const resetPassword = async (req, res) => {
     
     res.cookie('user', user.email, {
       secure: true, // Ensures the cookie is sent over HTTPS only
-      httpOnly: false, // Prevents client-side JS from accessing the cookie
+      httpOnly: true, // Prevents client-side JS from accessing the cookie
       sameSite: 'none', // Allows cross-site cookie sharing
       maxAge: 30000 // expires in 1 hour
     });
