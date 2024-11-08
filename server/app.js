@@ -8,7 +8,7 @@ const cookieParser = require('cookie-parser');
 // Use CORS with specific origin
 app.use(express.json());
 app.use(cookieParser());
-const allowedOrigins = 'https://react-js-e-commerce-store-client.vercel.app';
+const allowedOrigins = 'https://www.azzyshardware.store';
 const corsOptions = {
   origin: allowedOrigins, // Replace with the domain you want to allow
   credentials: true, // Allow credentials to be included in the request

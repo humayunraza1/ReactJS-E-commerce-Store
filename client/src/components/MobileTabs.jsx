@@ -3,6 +3,8 @@ import { Tabs } from 'antd';
 import DashHome from './DashHome';
 import Settings from './Settings';
 import { useSearchParams } from 'react-router-dom';
+import useAuth from 'src/hooks/useAuth';
+import AllOrders from './AllOrders';
 const onChange = (key) => {
   console.log(key);
 };
@@ -21,7 +23,7 @@ const d1 = [
   {
     key:'2',
     label:'Orders',
-    children: 'This is all orders tab'
+    children: <AllOrders/>
 },
 ]
 
@@ -55,14 +57,18 @@ const items = [
 
 
 function MobileTabs({current,setCurrent,setSearchParams,searchParams}) {
-
+const {auth} = useAuth();
 return(
 <Tabs centered animated activeKey={current} defaultActiveKey={current} items={items} onChange={(e)=>{setCurrent(e)
 if(e == 0){
   setSearchParams({})
 }
 if(e==1){
-  setSearchParams({tab:'settings'})
+  if(auth?.user?.role == 'Admin'){
+    setSearchParams({ad:'settings'})
+  }else{
+    setSearchParams({tab:'settings'})
+  }
 }
 if(e==2){
   setSearchParams({tab:'order-history'})
@@ -70,6 +76,47 @@ if(e==2){
 if(e==4){
   setSearchParams({tab:'disputes'})
 }
-
+if(e.key == 20){
+  if(auth?.user?.role !== "Admin"){
+  navigate('/dashboard');
+  setCurrent(0);
+  }
+  setSearchParams({ad:"products"});
+}
+if(e.key == 21){
+  if(auth?.user?.role !== "Admin"){
+  navigate('/dashboard');
+  setCurrent(0);
+  }
+  setSearchParams({ad:"add-product"});
+}
+if(e.key == 30){
+  if(auth?.user?.role !== "Admin"){
+  navigate('/dashboard');
+  setCurrent(0);
+  }
+  setSearchParams({ad:"users"});
+}
+if(e.key == 40){
+  if(auth?.user?.role !== "Admin"){
+  navigate('/dashboard');
+  setCurrent(0);
+  }
+  setSearchParams({ad:"vouchers"});
+}
+if(e.key == 50){
+  if(auth?.user?.role !== "Admin"){
+  navigate('/dashboard');
+  setCurrent(0);
+  }
+  setSearchParams({ad:"orders"});
+}
+if(e.key == 60){
+  if(auth?.user?.role !== "Admin"){
+  navigate('/dashboard');
+  setCurrent(0);
+  }
+  setSearchParams({ad:"disputes"});
+}
 }} />)};
 export default MobileTabs;
