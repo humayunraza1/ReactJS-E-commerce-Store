@@ -39,7 +39,7 @@ function App() {
         <Route path="register" element={<Register />} />
         <Route path="login" element={<Login  />} />
         <Route path="unauthorized" element={<Unauthorized />} />
-
+      
         {/* Catch All */}
         <Route path="*" element={<NotFound />} />
 

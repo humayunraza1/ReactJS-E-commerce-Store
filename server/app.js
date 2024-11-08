@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
-const authRoutes = require('../server/api/auth/auth.routes');
-const userRoutes = require('../server/user/user.routes')
-const adminRoutes = require('../server/admin/admin.routes')
+const authRoutes = require('./api/auth/auth.routes'); // Corrected path
+const userRoutes = require('./user/user.routes'); // Correct path
+const adminRoutes = require('./admin/admin.routes'); // Correct path
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 // Use CORS with specific origin
@@ -28,7 +28,7 @@ app.use('/api/auth', authRoutes);
 app.use('/users',  userRoutes);
 app.use('/admin',  adminRoutes);
 
-const port = 3000;
+const port = process.env.PORT || 3000;
 app.get('/',(req,res)=>{
   res.send('Welcome to server')
 })

@@ -11,6 +11,7 @@ function useRefreshToken () {
             response = await axios.get('/api/auth/refresh',{
                 withCredentials:true
             })
+            console.log("response: " + response);
             setAuth(prev => {
                 return {...prev, 
                     user: {userID:response.data.user.userID, role:response.data.user.role},
