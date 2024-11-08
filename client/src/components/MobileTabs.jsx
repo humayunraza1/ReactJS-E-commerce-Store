@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs } from 'antd';
 import DashHome from './DashHome';
 import Settings from './Settings';
@@ -19,6 +19,15 @@ const {auth} = useAuth();
 const [currTab,setCurrTab]=useState(0);
 const navigate = useNavigate();
 
+useEffect(()=>{
+const adValue = searchParams.get('ad')
+const tabValue = searchParams.get('tab')
+  if(adValue == 'orders'){
+    setCurrent(20)
+    setCurrTab(2)
+  }
+})
+
 const d1 = [
   {
     key:'0',
@@ -26,12 +35,12 @@ const d1 = [
     children: 'This is all users tab'
 },
   {
-    key:'20',
+    key:'1',
     label:'Products',
     children: 'This is all products tab'
 },
   {
-    key:'50',
+    key:'2',
     label:'Orders',
     children: <AllOrders/>
 },
@@ -89,6 +98,7 @@ if(e == 20){
   setCurrent(0);
   }
   setSearchParams({ad:"products"});
+  setCurrTab(1)
 }
 if(e == 21){
   if(auth?.user?.role !== "Admin"){
@@ -118,7 +128,7 @@ if(e == 50){
   setCurrent(0);
   }
   setSearchParams({ad:"orders"});
-  setCurrTab(50)
+  setCurrTab(2)
 }
 if(e == 60){
   if(auth?.user?.role !== "Admin"){
