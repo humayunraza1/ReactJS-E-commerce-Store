@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs } from 'antd';
 import DashHome from './DashHome';
 import Settings from './Settings';
@@ -8,6 +8,16 @@ import AllOrders from './AllOrders';
 const onChange = (key) => {
   console.log(key);
 };
+
+
+
+
+function MobileTabs({current,setCurrent,setSearchParams,searchParams}) {
+
+
+const {auth} = useAuth();
+const [currTab,setCurrTab]=useState(0);
+const navigate = useNavigate();
 
 const d1 = [
   {
@@ -46,7 +56,7 @@ const items = [
   {
     key: '20',
     label: 'Admin',
-    children: <Tabs animated centered items={d1}/>,
+    children: <Tabs animated activeKey={currTab} centered items={d1}/>,
   },
   {
     key: '4',
@@ -55,10 +65,6 @@ const items = [
   },
 ];
 
-
-function MobileTabs({current,setCurrent,setSearchParams,searchParams}) {
-const {auth} = useAuth();
-const navigate = useNavigate();
 return(
 <Tabs centered animated activeKey={current} defaultActiveKey={current} items={items} onChange={(e)=>{setCurrent(e)
 if(e == 0){
@@ -90,6 +96,7 @@ if(e == 21){
   setCurrent(0);
   }
   setSearchParams({ad:"add-product"});
+  setCurrTab(20);
 }
 if(e == 30){
   if(auth?.user?.role !== "Admin"){
@@ -111,6 +118,7 @@ if(e == 50){
   setCurrent(0);
   }
   setSearchParams({ad:"orders"});
+  setCurrTab(50)
 }
 if(e == 60){
   if(auth?.user?.role !== "Admin"){
