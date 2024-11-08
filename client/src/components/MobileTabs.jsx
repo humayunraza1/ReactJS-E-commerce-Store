@@ -16,12 +16,12 @@ const d1 = [
     children: 'This is all users tab'
 },
   {
-    key:'1',
+    key:'20',
     label:'Products',
     children: 'This is all products tab'
 },
   {
-    key:'2',
+    key:'50',
     label:'Orders',
     children: <AllOrders/>
 },
@@ -77,42 +77,42 @@ if(e==2){
 if(e==4){
   setSearchParams({tab:'disputes'})
 }
-if(e.key == 20){
+if(e == 20){
   if(auth?.user?.role !== "Admin"){
   navigate('/dashboard');
   setCurrent(0);
   }
   setSearchParams({ad:"products"});
 }
-if(e.key == 21){
+if(e == 21){
   if(auth?.user?.role !== "Admin"){
   navigate('/dashboard');
   setCurrent(0);
   }
   setSearchParams({ad:"add-product"});
 }
-if(e.key == 30){
+if(e == 30){
   if(auth?.user?.role !== "Admin"){
   navigate('/dashboard');
   setCurrent(0);
   }
   setSearchParams({ad:"users"});
 }
-if(e.key == 40){
+if(e == 40){
   if(auth?.user?.role !== "Admin"){
   navigate('/dashboard');
   setCurrent(0);
   }
   setSearchParams({ad:"vouchers"});
 }
-if(e.key == 50){
+if(e == 50){
   if(auth?.user?.role !== "Admin"){
   navigate('/dashboard');
   setCurrent(0);
   }
   setSearchParams({ad:"orders"});
 }
-if(e.key == 60){
+if(e == 60){
   if(auth?.user?.role !== "Admin"){
   navigate('/dashboard');
   setCurrent(0);
