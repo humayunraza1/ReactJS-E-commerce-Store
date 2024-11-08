@@ -10,7 +10,6 @@ function Layout () {
     <div >
       <Outlet/>
       <Toaster richColors position="top-center"/>
-      <Button onClick={()=>{console.log(auth.token)}}>Output</Button>
     </div>
   )
 };
