@@ -22,9 +22,10 @@ const navigate = useNavigate();
 useEffect(()=>{
 const adValue = searchParams.get('ad')
 const tabValue = searchParams.get('tab')
+console.log('AdValue: ', adValue)
   if(adValue == 'orders'){
-    setCurrent(20)
-    setCurrTab(2)
+    setCurrent('20')
+    setCurrTab('2')
   }
 })
 

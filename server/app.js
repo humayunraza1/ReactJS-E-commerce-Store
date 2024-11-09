@@ -8,7 +8,7 @@ const cookieParser = require('cookie-parser');
 // Use CORS with specific origin
 app.use(express.json());
 app.use(cookieParser());
-const allowedOrigins = 'https://www.azzyshardware.store';
+const allowedOrigins = 'http://localhost:5000';
 const corsOptions = {
   origin: allowedOrigins, // Replace with the domain you want to allow
   credentials: true, // Allow credentials to be included in the request

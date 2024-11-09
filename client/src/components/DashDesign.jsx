@@ -19,6 +19,8 @@ import useAuth from '../hooks/useAuth';
 import ListProducts from './ListProducts';
 import AddProduct from './AddProduct';
 import AllOrders from './AllOrders';
+import MobileNav from './MobileNav';
+import ToolsMenu from './ToolsMenu';
 const { Header, Content, Footer, Sider } = Layout;
 function getItem(label, key, icon, children) {
   return {
@@ -53,6 +55,7 @@ const DashDesign = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [current, setCurrent] = useState('0');
   const {auth} = useAuth();
+  const [mobileNav,setMobileNav]=useState(0)
   const {darkMode} = useGeneral();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -66,16 +69,20 @@ const DashDesign = () => {
       if(!userTabValues.includes(tabValue) || !tabValue){
         navigate('/dashboard')
         setCurrent('0')
+        setMobileNav(0)
       }
       
       if(tabValue == 'settings'){
         setCurrent('1')
+        setMobileNav(1)
       }
       if(tabValue == 'order-history'){
         setCurrent('2')
+        setMobileNav(1)
       }
       if(tabValue == 'disputes'){
         setCurrent('4')
+        setMobileNav(1)
       }
     }
     if(auth?.user?.role == "Admin"){
@@ -83,29 +90,41 @@ const DashDesign = () => {
       if(!adminTabValues.includes(tabValue) || !tabValue){
         navigate('/dashboard')
         setCurrent('0')
+        setMobileNav(0)
       }
       
       if(tabValue == 'settings'){
         setCurrent('1')
+        setMobileNav(1)
       }
       if(tabValue == 'products'){
         setCurrent('20')
+        setMobileNav(1)
       }
       if(tabValue == 'add-product' || tabValue == 'edit-product'){
         setCurrent('21')
+        setMobileNav(1)
       }
 
       if(tabValue == 'orders'){
         setCurrent('50')
+        setMobileNav(1)
+
       }
       if(tabValue == 'vouchers'){
         setCurrent('40')
+        setMobileNav(1)
+
       }
       if(tabValue == 'users'){
         setCurrent('30')
+        setMobileNav(1)
+
       }
       if(tabValue == 'disputes'){
         setCurrent('60')
+        setMobileNav(1)
+
       }
     }
     
@@ -121,59 +140,83 @@ const DashDesign = () => {
     if(e.key == 1){
       if(auth?.user?.role == "Admin"){
         setSearchParams({ad:'settings'})
+        setMobileNav(1)
+
       }else{
         setSearchParams({tab:'settings'})
+        setMobileNav(1)
+
       }
       
     }
     if(e.key == 2){
       setSearchParams({tab:'order-history'})
+      setMobileNav(1)
+
     }
     if(e.key == 4){
       setSearchParams({tab:'disputes'})
+      setMobileNav(1)
+
     }
 
     if(e.key == 20){
       if(auth?.user?.role !== "Admin"){
       navigate('/dashboard');
       setCurrent(0);
-      }
+      setMobileNav(0)
+
+    }
       setSearchParams({ad:"products"});
+      setMobileNav(1)
+    
     }
     if(e.key == 21){
       if(auth?.user?.role !== "Admin"){
       navigate('/dashboard');
       setCurrent(0);
-      }
+      setMobileNav(0)
+    
+    }
       setSearchParams({ad:"add-product"});
+      setMobileNav(1)
+    
     }
     if(e.key == 30){
       if(auth?.user?.role !== "Admin"){
       navigate('/dashboard');
       setCurrent(0);
-      }
+      setMobileNav(0)
+    }
       setSearchParams({ad:"users"});
+      setMobileNav(1)
     }
     if(e.key == 40){
       if(auth?.user?.role !== "Admin"){
       navigate('/dashboard');
       setCurrent(0);
-      }
+      setMobileNav(0)
+    }
       setSearchParams({ad:"vouchers"});
+      setMobileNav(1)
     }
     if(e.key == 50){
       if(auth?.user?.role !== "Admin"){
       navigate('/dashboard');
       setCurrent(0);
-      }
+      setMobileNav(0)
+    }
       setSearchParams({ad:"orders"});
+      setMobileNav(1)
     }
     if(e.key == 60){
       if(auth?.user?.role !== "Admin"){
       navigate('/dashboard');
       setCurrent(0);
-      }
+      setMobileNav(0)
+    }
       setSearchParams({ad:"disputes"});
+      setMobileNav(1)
     }
 
     setCurrent(e.key);
@@ -194,7 +237,28 @@ const DashDesign = () => {
           <h1 className='text-3xl'>Azzy's Hardware</h1>
           <p className='text-lg'>Dashboard</p>
         </div>
-    <MobileTabs current={current} setCurrent={setCurrent} searchParams={searchParams} setSearchParams={setSearchParams}/>
+    {/* <MobileTabs current={current} setCurrent={setCurrent} searchParams={searchParams} setSearchParams={setSearchParams}/> */}
+    <div
+            style={{
+              padding: 24,
+              minHeight: 360,
+              background: darkMode ? '#001529':'white',
+              borderRadius: borderRadiusLG,
+            }}
+            >
+           {current == '0' && <DashHome/>}
+           {!current && <ToolsMenu  setCurrent={setCurrent} setSearchParams={setSearchParams}/>}
+           {current == '1' && <Settings/>}
+           {current == '2' && <OrderHistory/>}
+           {current == '4' && <Disputes/>}
+           {current == '05' && <Disputes/>}
+           {current == '16' && <Disputes/>}
+           {current == '27' && <Disputes/>}
+           {current == '20' && <ListProducts/>}
+           {current == '21' && <AddProduct/>}
+           {current == '50' && <AllOrders/>}
+          </div>
+    <MobileNav mobileNav={mobileNav} setMobileNav={setMobileNav} setCurrent={setCurrent} setSearchParams={setSearchParams}/>
     </div>
     <Layout
     className='hidden md:flex'
