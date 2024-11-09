@@ -1,5 +1,5 @@
 import axios from "axios";
-const BASE_URL = 'https://www.azzyshardware.store'
+const BASE_URL = 'https://api.azzyshardware.store'
 
 export default axios.create({
     baseURL: BASE_URL,
