@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "./ui/dialog"
 import { useSearchParams } from "react-router-dom";
-let data =[];
+let prodWithKey = []
 
 
 function ListProducts () {
@@ -39,15 +39,13 @@ function ListProducts () {
                 },
                 withCredentials:true
             });
-            const ldata = response.data.products;
-            data = ldata?.flatMap((prod, index) =>
-              {
-                return ({key:index,itemName: prod.itemName, itemID:prod.itemID, children:prod.variants, url:prod.url, thumbnail:prod.thumbnail,isOOS:null,action:true})}  );
-    console.log("data response: ", response)
-    setProducts(data);
+            prodWithKey = response.data.products.map((prod, index) => ({
+              ...prod,    // Spread the original order properties
+              key: index // Add the index property
+          }));
+          console.log(prodWithKey)
+    setProducts(prodWithKey);
     setLoading(false);
-    console.log("data: ",data)
-    ldata.map(item => console.log(item.itemName))
 }catch(err){
     console.log(err)
     setLoading(false);
@@ -65,6 +63,8 @@ const columns = [
       title: '',
       dataIndex: 'thumbnail',
       key: 'thumbnail',
+      width:100,
+      fixed:'left',
       render: (text) => <img className="w-[42px]" src={text}/>
     },
     {
@@ -73,32 +73,12 @@ const columns = [
       key: 'itemName',
       render: (text) => <h1>{text}</h1>
     },
-    {
-      title:'Variant',
-      dataIndex:'Variant',
-      key:'Variant'
-  },
-    {
-      title:'Price',
-      dataIndex:'price',
-      key:'price'
-  },
-    {
-      title:'SKU',
-      dataIndex:'SKU',
-      key:'SKU'
-  },
-  {
-    title: 'Status',
-    dataIndex: 'isOOS',
-    key: 'isOOS',
-    sorter: (a, b) => a.isOOS - b.isOOS,
-    render: (text)=>text !== null ? <Tag color={text?"red":"green"}>{text?"Sold Out":"In Stock" }</Tag>:''
-  },
   {
     title: 'Action',
-    dataIndex: 'action',
+    dataIndex: '',
     key: 'x',
+    width:100,
+    fixed:'right',
     render: (text,record,index) => text && <Button type="dashed" onClick={()=>{handleOpenInNewTab(record.url)}} shape="circle" icon={<EditOutlined />} />,
   },
 
@@ -106,82 +86,67 @@ const columns = [
 
 
 const varCol = [
-  {
-    title:'',
-    dataIndex:'thumbnail',
-    key:'varThumbnail',
-    width:100,
-    fixed:'left',
-    render: (text)=> <img src={text} className="w-[60px]"/>
-  },
-  {
-    title:'Variant',
-    dataIndex:'Variant',
-    width:100,
-    key:'Var',
-    render: (text)=> <Input type="text" value={text}/>
-  },
-  {
-    title:'Price',
-    dataIndex:'price',
-    width:150,
-    key:'price',
-    render:(text)=><>
-    <Input addonAfter="Rs" type="Number" value={text}/>
-    </>
-  },
-  {
-    title:'Stock',
-    dataIndex:'stock',
-    key:'stock',
-    width:100,
-    render:(text)=><>
-    <Input type="Number" value={text}/>
-    </>
-  },
-  {
-    title:'SKU',
-    width:100,
-    dataIndex:'SKU',
-    key:'SKU'
-  },
-  {
-    title:'Available',
-    width:100,
-    dataIndex:'',
-    key:'Available',
-    render:(text,record)=><Switch defaultChecked value={!record.isOOS} onClick={()=>record.isOOS = !record.isOOS}/>
-  },
+    {
+      title:'',
+      dataIndex:'thumbnail',
+      key:'vth',
+      render:(text,record)=><img className="w-[42px]" alt={record.Variant} src={text}/>
+    },
+    {
+      title:'Name',
+      dataIndex:'Variant',
+      key:'vn',
+      render:(text,record)=><p>{text}</p>
+    },
+    {
+      title:'SKU',
+      dataIndex:'SKU',
+      key:'vsku',
+      render:(text,record)=><p>{text}</p>
+    },
+    {
+      title:'Price',
+      dataIndex:'price',
+      key:'vprice',
+      render:(text,record)=><p>{text}</p>
+    },
+    {
+      title:'Stock',
+      dataIndex:'stock',
+      key:'vstock',
+      render:(text,record)=><p>{text}</p>
+    },
+    {
+      title:'Status',
+      dataIndex:'isOOS',
+      key:'visOOS',
+      fixed:'right',
+      width:100,
+      render:(text,record)=><Tag color={`${text ? 'red':'green'}`}>{text ? 'Sold Out':'In Stock'}</Tag>
+    },
 ]
+
+function expandedRowRender(record) {
+  console.log("record: ", record.variants)
+ return (
+    <Table
+    scroll={{x:900}}
+        columns={varCol}
+        dataSource={record.variants} // Pass only the specific order
+        pagination={false}
+    />
+  );
+} 
 
   return (
 <>
 {/* <FloatButton icon={<PlusOutlined />}/> */}
-    <Dialog open={Open} onOpenChange={()=>setOpen(false)}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Edit Product</DialogTitle>
-    </DialogHeader>
-    <div className="flex flex-col gap-1 items-center">
-        <img className="w-[250px] rounded-xl border-2" src={Selected.thumbnail} alt={Selected.itemName}/>
-        <Label className="text-blue-800 hover:cursor-pointer">Change thumbnail</Label>
-    </div>
-    <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Product Name
-            </Label>
-            <Input id="Item Name" value={Selected.itemName} className="col-span-3" />
-          </div>
-          <div className="w-[460px]">
-            <Table bordered scroll={{x:400}} pagination={false} columns={varCol} dataSource={Selected.children}/>
-          </div>
-  </DialogContent>
-</Dialog>
 <div className="flex flex-col gap-2">
       <div className="flex justify-end">
       <Button type="primary" onClick={()=>handleAddNew()} icon={<PlusOutlined/>}>Add Product</Button>
       </div>
-      <Table loading={Loading} expandable={{defaultExpandAllRows:true}} columns={columns} dataSource={Products} />
+      <Table scroll={{x:900}} loading={Loading} expandable={{expandedRowRender:(record)=>expandedRowRender(record)}} columns={columns} dataSource={Products} />
+      
 </div>
 
 </>

@@ -239,7 +239,7 @@ const expandCol = [
                 render:(text,record,index) => {
                     return <div>
                         {
-                            text[0].items.map((item)=> {return <p>{item.name}</p>})
+                            text[0].items.map((item,index)=> {return <><p>{`${index+1}. `+item.name}</p></>})
                         }
                     </div>
                 }
@@ -295,6 +295,7 @@ const expandCol = [
 
 const expandedRowRender = (record) => (
     <Table
+        scroll={{x:900}}
         columns={expandCol}
         dataSource={[record]} // Pass only the specific order
         pagination={false}
@@ -320,8 +321,8 @@ function searchOrders(id){
             setValue(e.target.value) 
             searchOrders(e.target.value) }}
                 /></Space.Compact>
-        <Table rowSelection={rowSelection} columns={orderCol}    expandable={{
-        expandedRowRender: (record) => expandedRowRender(record), // Pass the current record
+        <Table scroll={{x:900}} rowSelection={rowSelection} columns={orderCol}    expandable={{
+        expandedRowRender: (record) =>expandedRowRender(record), // Pass the current record
     }} dataSource={Orders}/>
     </>
   )
