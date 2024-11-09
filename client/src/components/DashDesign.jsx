@@ -6,7 +6,7 @@ import {
   SettingOutlined,
   HomeOutlined
 } from '@ant-design/icons';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import { Breadcrumb, Divider, Layout, Menu, theme } from 'antd';
 import {useNavigate, useSearchParams} from "react-router-dom";
 import Settings from './Settings';
 import OrderHistory from './OrderHistory';
@@ -237,6 +237,7 @@ const DashDesign = () => {
           <h1 className='text-3xl'>Azzy's Hardware</h1>
           <p className='text-lg'>Dashboard</p>
         </div>
+        <Divider/>
     {/* <MobileTabs current={current} setCurrent={setCurrent} searchParams={searchParams} setSearchParams={setSearchParams}/> */}
     <div
             style={{
