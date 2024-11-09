@@ -64,7 +64,6 @@ const columns = [
       dataIndex: 'thumbnail',
       key: 'thumbnail',
       width:100,
-      fixed:'left',
       render: (text) => <img className="w-[42px]" src={text}/>
     },
     {

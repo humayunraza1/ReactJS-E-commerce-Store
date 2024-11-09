@@ -61,7 +61,6 @@ const orderCol = [
         dataIndex: "orderID",
         key: "id",
         width: 40,
-        fixed: "left",
         render: (text, record, index) => (
           <div key={index} className={`flex items-center w-[96px]}`}>
             {text}
