@@ -3,12 +3,16 @@ const app = express();
 const authRoutes = require('./api/auth/auth.routes'); // Corrected path
 const userRoutes = require('./user/user.routes'); // Correct path
 const adminRoutes = require('./admin/admin.routes'); // Correct path
+const AWS = require('aws-sdk');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+
 // Use CORS with specific origin
 app.use(express.json());
 app.use(cookieParser());
-const allowedOrigins = 'http://localhost:5000';
+const allowedOrigins = 'https://www.azzyshardware.store';
 const corsOptions = {
   origin: allowedOrigins, // Replace with the domain you want to allow
   credentials: true, // Allow credentials to be included in the request
@@ -18,6 +22,13 @@ const corsOptions = {
 app.use(
   cors(corsOptions)
 );
+
+// Configure AWS SDK
+AWS.config.update({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: 'ap-southeast-1', // e.g., 'us-west-2'
+});
 
 // Handle preflight `OPTIONS` request for all routes
 app.options('*', cors(corsOptions), (req,res)=>{

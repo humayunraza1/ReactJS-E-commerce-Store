@@ -1,5 +1,9 @@
 const {User,Item,Order,Category} = require('../models/user.model');
 const { v4: uuidv4 } = require('uuid');
+const { S3 } = require('@aws-sdk/client-s3');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+const s3 = new S3({ region: 'ap-southeast-1'});
 
 function generateShortUUID() {
     // Generate UUID
@@ -10,6 +14,46 @@ function generateShortUUID() {
 
     return shortUUID;
 }
+
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: 'elasticbeanstalk-ap-southeast-1-651706742954',
+    acl: 'public-read', // Optional: adjust access as needed
+    metadata: (req, file, cb) => {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: (req, file, cb) => {
+      // Define the file name to be saved in S3
+      const fileName = `thumbnails/${Date.now().toString()}-${file.originalname}`;
+      cb(null, fileName);
+    },
+  }),
+}).single('file'); // Specify that you're uploading a single file with the field name 'file'
+
+
+// The function to handle the request and response
+const uploadFileToS3 = (req, res) => {
+  // Handle the file upload using multer
+  upload(req, res, function (err) {
+    if (err) {
+      console.error('Error uploading file:', err);
+      return res.status(500).json({ error: 'Error uploading file' });
+    }
+
+    // Check if file is uploaded
+    if (req.file) {
+      // If file upload is successful, return the file URL from S3
+      res.json({
+        message: 'File uploaded successfully',
+        fileUrl: req.file.location, // The URL of the file in S3
+      });
+    } else {
+      res.status(400).json({ error: 'No file uploaded' });
+    }
+  });
+};
+
 
 const adminDashboard = async (req, res) => {
     const { userID } = req.user;
@@ -151,7 +195,11 @@ const addItem = async (req, res) => {
       return res.status(500).send({ message: "Unknown error occurred", error: error });
     }
   };
-  
+
+  async function uploadImage(req,res){
+    const {userID} = req.user;
+
+  }
 
   const updateItem = async (req, res) => {
     try {
@@ -231,4 +279,4 @@ const addItem = async (req, res) => {
   
 
 
-module.exports = {adminDashboard,addItem,getOrders,updateStatus,updateItem,handleDispute,editCategories};
+module.exports = {adminDashboard,addItem,getOrders,updateStatus,updateItem,handleDispute,editCategories,uploadFileToS3};

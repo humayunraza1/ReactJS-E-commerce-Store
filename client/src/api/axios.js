@@ -1,5 +1,5 @@
 import axios from "axios";
-const BASE_URL = 'https://api.azzyshardware.store'
+const BASE_URL = 'https://ecomm-server.azurewebsites.net'
 const LOCAL_URL = 'http://localhost:3000'
 
 export default axios.create({

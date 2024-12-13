@@ -10,6 +10,7 @@ import {
   Space,
   Checkbox,
   Tag,
+  Upload,
 } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import { Label } from "./ui/label";
@@ -61,9 +62,9 @@ function AddProduct() {
     { key: "", label: "", children: [{ key: "", label: "" }] },
   ]);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [uploadImage, setUploadImage] = useState('')
   const adValue = searchParams.get('ad')
   const prodValue = searchParams.get('prod')
-
 // Edit Product Code
 useEffect(() => {
 
@@ -481,6 +482,18 @@ function generateUniqueSKU() {
     },
   ];
 
+  function checkImageFile(file){
+    if(file.type !== "image/webp"){
+      toast.error("Invalid format. Upload WEBP images only")
+      return
+    }
+    if(file.size /1024/1024 > 2 ){
+      toast.error("Invalid file size. Max 2MB")
+      return
+    }
+
+    setUploadImage(file);
+  }
   const validateImageUrl = () => {
     // Regular expression to check if the URL is valid
     const urlRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+.*)$/;
@@ -609,12 +622,33 @@ function generateUniqueSKU() {
    
   }
 
+  async function uploadImageServer(req, res) {
+    const formData = new FormData();
+    formData.append('file', uploadImage);  // Assuming uploadImage is the selected file
+  
+    try {
+      const response = await axiosPrivate.post('/admin/upload', formData, {
+        headers: {
+          'Authorization': auth.token,
+          'Content-Type': 'multipart/form-data', // Correct content-type for file uploads
+        },
+        withCredentials: true
+      });
+      toast.success(response.data.message);
+      setProdThumbnail(response.data.fileUrl)
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   return (
     <>
       <div className="flex flex-col gap-8">
         <div>
           <h1 className="text-2xl font-semibold">Basic Information</h1>
           <div className="flex flex-col md:flex-row gap-3 mt-3 items-center md:items-start md:justify-center">
+            <div className="text-center flex flex-col gap-1">
+
             <div className="mt-5">
               <Popover
                 content={
@@ -626,7 +660,7 @@ function generateUniqueSKU() {
                     />{" "}
                     <p
                       className={`${isError ? "block" : "hidden"} text-red-700`}
-                    >
+                      >
                       Invalid Image URL
                     </p>
                   </>
@@ -635,21 +669,23 @@ function generateUniqueSKU() {
                 trigger="click"
                 open={open}
                 onOpenChange={handleOpenChange}
-              >
+                >
                 <div className="w-[150px] h-[150px] flex justify-center items-center border-2 hover:cursor-pointer border-slate-100 rounded-xl">
                   {prodThumbnail == "" ? (
                     <p className="font-Bebas text-8xl text-slate-500">+</p>
                   ) : (
                     <img
-                      src={prodThumbnail}
-                      alt={
-                        prodName + "'s thumbnail"
-                      }
+                    src={prodThumbnail}
+                    alt={
+                      prodName + "'s thumbnail"
+                    }
                     />
                   )}
                 </div>
               </Popover>
-            </div>
+            </div> 
+            <Upload accept="image/webp" showUploadList={false} customRequest={uploadImageServer} beforeUpload={(file)=>checkImageFile(file)}><Button>Upload Image</Button></Upload>
+              </div>
             <div className="flex flex-col gap-2">
               <Label>Product Name</Label>
               <Input
